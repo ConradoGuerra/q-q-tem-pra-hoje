@@ -12,7 +12,7 @@ type Ingredient struct {
 	Quantity    int
 }
 
-// Interface
+// InterfaceMAin
 type IngredientManager interface {
 	AddIngredient(Ingredient)
 	FindIngredients() []Ingredient
