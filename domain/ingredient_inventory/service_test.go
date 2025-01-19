@@ -46,6 +46,7 @@ type InMemoryIngredientRepository struct {
 func (r *InMemoryIngredientRepository) AddIngredient(ingredient Ingredient) {
 	r.ingredients = append(r.ingredients, ingredient)
 }
+
 func (r *InMemoryIngredientRepository) FindIngredients() []Ingredient {
 	ingredientMap := make(map[string]Ingredient)
 	for _, ingredient := range r.ingredients {
@@ -76,8 +77,8 @@ func TestAddIngredientToInventory(t *testing.T) {
 		assert.Contains(t, repository.ingredients, ingredient, "Ingredient should be added to inventory")
 	})
 }
-func TestFindIngredients(t *testing.T) {
 
+func TestFindIngredients(t *testing.T) {
 	t.Run("it should find all ingredients in the inventory", func(t *testing.T) {
 		repository := &InMemoryIngredientRepository{}
 		ingredientService := NewService(repository)
