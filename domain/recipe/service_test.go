@@ -50,4 +50,42 @@ func TestAddRecipe(t *testing.T) {
 		assert.Equal(t, recipe.Recipe{}, invalidRecipe)
 
 	})
+
+}
+
+func TestRecommendRecipes(t *testing.T) {
+	t.Run("It should recommend recipes based on quantity of ingredients", func(t *testing.T) {
+		availableIngredients := []ingredient.Ingredient{
+			{Name: "Onion", MeasureType: "unit", Quantity: 1},
+			{Name: "Rice", MeasureType: "mg", Quantity: 500},
+			{Name: "Garlic", MeasureType: "unit", Quantity: 2},
+		}
+
+		recipes := []recipe.Recipe{
+			{Name: "Rice with Onion and Garlic", Ingredients: []ingredient.Ingredient{
+				{Name: "Onion", MeasureType: "unit", Quantity: 1},
+				{Name: "Rice", MeasureType: "mg", Quantity: 500},
+				{Name: "Garlic", MeasureType: "unit", Quantity: 2},
+			}},
+			{Name: "Rice with Garlic", Ingredients: []ingredient.Ingredient{
+				{Name: "Rice", MeasureType: "mg", Quantity: 500},
+				{Name: "Garlic", MeasureType: "unit", Quantity: 2},
+			}},
+			{Name: "Rice with Onion", Ingredients: []ingredient.Ingredient{
+				{Name: "Onion", MeasureType: "unit", Quantity: 1},
+				{Name: "Rice", MeasureType: "mg", Quantity: 500},
+			}},
+		}
+		repository := repositories.NewInMemoryRecipeManager()
+		service := recipe.NewRecipeService(repository)
+
+		expectedRecommendations := []recipe.Recommendation{
+			{Recommendation: 1, Recipe: recipes[0]},
+			{Recommendation: 2, Recipe: recipes[1]},
+			{Recommendation: 3, Recipe: recipes[2]},
+    }
+
+		recommendations := service.CreateRecipeRecommendations(&availableIngredients)
+		assert.Equal(t, expectedRecommendations, recommendations)
+	})
 }

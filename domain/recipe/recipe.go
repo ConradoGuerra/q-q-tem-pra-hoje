@@ -10,6 +10,11 @@ type Recipe struct {
 	Ingredients []ingredient.Ingredient
 }
 
+type Recommendation struct {
+	Recommendation int
+	Recipe         Recipe
+}
+
 func (r *Recipe) Validate() error {
 	if r.Name == "" {
 		return errors.New("recipe name cannot be empty")
