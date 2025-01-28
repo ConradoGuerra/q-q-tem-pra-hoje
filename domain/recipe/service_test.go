@@ -16,7 +16,7 @@ func TestAddRecipe(t *testing.T) {
 			{Name: "Onion", MeasureType: "unit", Quantity: 1},
 			{Name: "Rice", MeasureType: "mg", Quantity: 500},
 			{Name: "Garlic", MeasureType: "unit", Quantity: 2}})
-		inMemoryRecipeManager := repositories.NewInMemoryRecipeManager()
+		inMemoryRecipeManager := repositories.NewInMemoryRecipeManager([]recipe.Recipe{})
 		recipeService := recipe.NewRecipeService(inMemoryRecipeManager)
 
 		recipeService.AddRecipe(expectedRecipe)
@@ -30,7 +30,7 @@ func TestAddRecipe(t *testing.T) {
 			{Name: "Rice", MeasureType: "mg", Quantity: 500},
 			{Name: "Garlic", MeasureType: "unit", Quantity: 2},
 		})
-		manager := repositories.NewInMemoryRecipeManager()
+		manager := repositories.NewInMemoryRecipeManager([]recipe.Recipe{})
 		service := recipe.NewRecipeService(manager)
 
 		service.AddRecipe(invalidRecipe)
@@ -41,7 +41,7 @@ func TestAddRecipe(t *testing.T) {
 
 	t.Run("It should return an error for invalid ingredients", func(t *testing.T) {
 		invalidRecipe, err := recipe.NewRecipe("Rice", []ingredient.Ingredient{}) // No ingredients
-		manager := repositories.NewInMemoryRecipeManager()
+		manager := repositories.NewInMemoryRecipeManager([]recipe.Recipe{})
 		service := recipe.NewRecipeService(manager)
 
 		service.AddRecipe(invalidRecipe)
@@ -58,7 +58,6 @@ func TestRecommendRecipes(t *testing.T) {
 		availableIngredients := []ingredient.Ingredient{
 			{Name: "Onion", MeasureType: "unit", Quantity: 1},
 			{Name: "Rice", MeasureType: "mg", Quantity: 500},
-			{Name: "Garlic", MeasureType: "unit", Quantity: 2},
 		}
 
 		recipes := []recipe.Recipe{
@@ -75,15 +74,19 @@ func TestRecommendRecipes(t *testing.T) {
 				{Name: "Onion", MeasureType: "unit", Quantity: 1},
 				{Name: "Rice", MeasureType: "mg", Quantity: 500},
 			}},
+			{Name: "Fries", Ingredients: []ingredient.Ingredient{
+				{Name: "Potato", MeasureType: "unit", Quantity: 2},
+			}},
 		}
-		repository := repositories.NewInMemoryRecipeManager()
+		repository := repositories.NewInMemoryRecipeManager(recipes)
 		service := recipe.NewRecipeService(repository)
 
 		expectedRecommendations := []recipe.Recommendation{
-			{Recommendation: 1, Recipe: recipes[0]},
-			{Recommendation: 2, Recipe: recipes[1]},
-			{Recommendation: 3, Recipe: recipes[2]},
-    }
+			{Recommendation: 1, Recipe: recipes[2]},
+			{Recommendation: 2, Recipe: recipes[0]},
+			{Recommendation: 3, Recipe: recipes[1]},
+			{Recommendation: 4, Recipe: recipes[3]},
+		}
 
 		recommendations := service.CreateRecipeRecommendations(&availableIngredients)
 		assert.Equal(t, expectedRecommendations, recommendations)
