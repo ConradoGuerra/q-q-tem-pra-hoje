@@ -10,7 +10,7 @@ import (
 )
 
 func TestAddRecipe(t *testing.T) {
-	t.Run("It should add a valid recipe", func(t *testing.T) {
+	t.Run("it should add a valid recipe", func(t *testing.T) {
 
 		expectedRecipe, err := recipe.NewRecipe("Rice", []ingredient.Ingredient{
 			{Name: "Onion", MeasureType: "unit", Quantity: 1},
@@ -24,7 +24,7 @@ func TestAddRecipe(t *testing.T) {
 		assert.Equal(t, expectedRecipe, inMemoryRecipeManager.Recipes[len(inMemoryRecipeManager.Recipes)-1])
 	})
 
-	t.Run("It should return an error for an invalid name", func(t *testing.T) {
+	t.Run("it should return an error for an invalid name", func(t *testing.T) {
 		invalidRecipe, err := recipe.NewRecipe("", []ingredient.Ingredient{ // Empty name
 			{Name: "Onion", MeasureType: "unit", Quantity: 1},
 			{Name: "Rice", MeasureType: "mg", Quantity: 500},
@@ -33,18 +33,18 @@ func TestAddRecipe(t *testing.T) {
 		manager := repositories.NewInMemoryRecipeManager([]recipe.Recipe{})
 		service := recipe.NewRecipeService(manager)
 
-		service.AddRecipe(invalidRecipe)
+		service.CreateRecipe(invalidRecipe)
 		assert.Error(t, err)
 		assert.Equal(t, "recipe name cannot be empty", err.Error())
 		assert.Equal(t, recipe.Recipe{}, invalidRecipe)
 	})
 
-	t.Run("It should return an error for invalid ingredients", func(t *testing.T) {
+	t.Run("it should return an error for invalid ingredients", func(t *testing.T) {
 		invalidRecipe, err := recipe.NewRecipe("Rice", []ingredient.Ingredient{}) // No ingredients
 		manager := repositories.NewInMemoryRecipeManager([]recipe.Recipe{})
 		service := recipe.NewRecipeService(manager)
 
-		service.AddRecipe(invalidRecipe)
+		service.CreateRecipe(invalidRecipe)
 		assert.Error(t, err)
 		assert.Equal(t, "recipe must have at least one ingredient", err.Error())
 		assert.Equal(t, recipe.Recipe{}, invalidRecipe)
@@ -54,7 +54,7 @@ func TestAddRecipe(t *testing.T) {
 }
 
 func TestRecommendRecipes(t *testing.T) {
-	t.Run("It should recommend recipes based on quantity of ingredients", func(t *testing.T) {
+	t.Run("it should recommend recipes based on quantity of ingredients", func(t *testing.T) {
 		availableIngredients := []ingredient.Ingredient{
 			{Name: "Onion", MeasureType: "unit", Quantity: 1},
 			{Name: "Rice", MeasureType: "mg", Quantity: 500},
@@ -88,7 +88,7 @@ func TestRecommendRecipes(t *testing.T) {
 			{Recommendation: 4, Recipe: recipes[3]},
 		}
 
-		recommendations := service.CreateRecipeRecommendations(&availableIngredients)
+		recommendations := service.CreateRecommendations(&availableIngredients)
 		assert.Equal(t, expectedRecommendations, recommendations)
 	})
 }

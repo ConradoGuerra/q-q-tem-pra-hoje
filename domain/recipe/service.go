@@ -13,11 +13,11 @@ func NewRecipeService(m RecipeManager) *RecipeService {
 	return &RecipeService{RecipeManager: m}
 }
 
-func (s *RecipeService) AddRecipe(recipe Recipe) error {
-	return s.RecipeManager.AddRecipe(recipe)
+func (s *RecipeService) CreateRecipe(recipe Recipe) error {
+	return s.AddRecipe(recipe)
 }
 
-func (s *RecipeService) CreateRecipeRecommendations(ingredients *[]ingredient.Ingredient) []Recommendation {
+func (s *RecipeService) CreateRecommendations(ingredients *[]ingredient.Ingredient) []Recommendation {
 	recipes := s.GetAllRecipes()
 
 	availableIngredientMap := make(map[string]bool)
@@ -27,8 +27,8 @@ func (s *RecipeService) CreateRecipeRecommendations(ingredients *[]ingredient.In
 	}
 
 	type RecommendationScore struct {
-		Recipe Recipe
-		Score  int
+		recipe Recipe
+		score  int
 	}
 
 	var scoredRecipes []RecommendationScore
@@ -48,13 +48,13 @@ func (s *RecipeService) CreateRecipeRecommendations(ingredients *[]ingredient.In
 	}
 
 	sort.Slice(scoredRecipes, func(i, j int) bool {
-		return scoredRecipes[i].Score > scoredRecipes[j].Score
+		return scoredRecipes[i].score > scoredRecipes[j].score
 	})
 
 	var recommendations []Recommendation
 
 	for i, scoredRecipe := range scoredRecipes {
-		recommendations = append(recommendations, Recommendation{Recommendation: i + 1, Recipe: scoredRecipe.Recipe})
+		recommendations = append(recommendations, Recommendation{Recommendation: i + 1, Recipe: scoredRecipe.recipe})
 	}
 
 	return recommendations

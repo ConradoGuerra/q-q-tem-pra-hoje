@@ -22,14 +22,21 @@ func TestAddIngredientToInventory(t *testing.T) {
 }
 
 func TestFindIngredients(t *testing.T) {
-	t.Run("it should find all ingredients in the inventory", func(t *testing.T) {
+	t.Run("it should find all ingredients in the inventory and aggregate them", func(t *testing.T) {
 		repository := &repositories.InMemoryIngredientRepository{}
 		ingredientService := ingredient.NewService(repository)
+
 		ingredientService.AddIngredientToInventory(ingredient.Ingredient{Name: "onion", Quantity: 10, MeasureType: "unit"})
 		ingredientService.AddIngredientToInventory(ingredient.Ingredient{Name: "garlic", Quantity: 2, MeasureType: "unit"})
 		ingredientService.AddIngredientToInventory(ingredient.Ingredient{Name: "onion", Quantity: 10, MeasureType: "unit"})
+
 		ingredients := ingredientService.FindIngredients()
-		expectedIngredients := []ingredient.Ingredient{{Name: "onion", Quantity: 20, MeasureType: "unit"}, {Name: "garlic", Quantity: 2, MeasureType: "unit"}}
+
+		expectedIngredients := []ingredient.Ingredient{
+			{Name: "onion", Quantity: 20, MeasureType: "unit"},
+			{Name: "garlic", Quantity: 2, MeasureType: "unit"},
+		}
+
 		assert.Equal(t, expectedIngredients, ingredients)
 	})
 }
