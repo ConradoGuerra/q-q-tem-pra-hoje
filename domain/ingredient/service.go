@@ -10,10 +10,10 @@ func NewService(ingredientRepository IngredientManager) *IngredientInventoryServ
 }
 
 // Implements method
-func (i *IngredientInventoryService) AddIngredientToInventory(ingredient Ingredient) {
-	i.ingredientRepository.AddIngredient(ingredient)
+func (i *IngredientInventoryService) AddIngredientToInventory(ingredient Ingredient) error {
+	return i.ingredientRepository.AddIngredient(ingredient)
 }
 
-func (i *IngredientInventoryService) FindIngredients() []Ingredient {
+func (i *IngredientInventoryService) FindIngredients() ([]Ingredient, error) {
 	return i.ingredientRepository.FindIngredients()
 }

@@ -1,6 +1,6 @@
 package ingredient
 
 type IngredientManager interface {
-	AddIngredient(Ingredient)
-	FindIngredients() []Ingredient
+	AddIngredient(Ingredient) error
+	FindIngredients() ([]Ingredient, error)
 }
