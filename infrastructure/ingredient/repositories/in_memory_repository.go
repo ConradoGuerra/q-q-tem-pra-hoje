@@ -1,6 +1,8 @@
 package repositories
 
-import "q-q-tem-pra-hoje/domain/ingredient"
+import (
+	"q-q-tem-pra-hoje/domain/ingredient"
+)
 
 // Repo
 type InMemoryIngredientRepository struct {
@@ -8,11 +10,12 @@ type InMemoryIngredientRepository struct {
 }
 
 // Implement interface
-func (r *InMemoryIngredientRepository) AddIngredient(ingredient ingredient.Ingredient) {
+func (r *InMemoryIngredientRepository) AddIngredient(ingredient ingredient.Ingredient) error {
 	r.Ingredients = append(r.Ingredients, ingredient)
+	return nil
 }
 
-func (r *InMemoryIngredientRepository) FindIngredients() []ingredient.Ingredient {
+func (r *InMemoryIngredientRepository) FindIngredients() ([]ingredient.Ingredient, error) {
 	ingredientMap := make(map[string]ingredient.Ingredient)
 	for _, ingredient := range r.Ingredients {
 		if existing, exists := ingredientMap[ingredient.Name]; exists {
@@ -27,5 +30,5 @@ func (r *InMemoryIngredientRepository) FindIngredients() []ingredient.Ingredient
 	for _, ingredient := range ingredientMap {
 		ingredientsFound = append(ingredientsFound, ingredient)
 	}
-	return ingredientsFound
+	return ingredientsFound, nil
 }

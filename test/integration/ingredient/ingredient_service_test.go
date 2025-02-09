@@ -51,6 +51,7 @@ func setupDatabase(t *testing.T) *sql.DB {
 
 	return db
 }
+
 func teardownDatabase(db *sql.DB, t *testing.T) {
 	if _, err := db.Exec("DROP TABLE IF EXISTS ingredients"); err != nil {
 		t.Fatalf("Failed to drop table: %v", err)

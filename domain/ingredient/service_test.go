@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestAddIngredientToInventory(t *testing.T) {
+func TestAddIngredient(t *testing.T) {
 	t.Run("it should add ingredients to inventory", func(t *testing.T) {
 
 		repository := &repositories.InMemoryIngredientRepository{}
@@ -30,13 +30,14 @@ func TestFindIngredients(t *testing.T) {
 		ingredientService.AddIngredientToInventory(ingredient.Ingredient{Name: "garlic", Quantity: 2, MeasureType: "unit"})
 		ingredientService.AddIngredientToInventory(ingredient.Ingredient{Name: "onion", Quantity: 10, MeasureType: "unit"})
 
-		ingredients := ingredientService.FindIngredients()
+		ingredients, err := ingredientService.FindIngredients()
 
 		expectedIngredients := []ingredient.Ingredient{
 			{Name: "onion", Quantity: 20, MeasureType: "unit"},
 			{Name: "garlic", Quantity: 2, MeasureType: "unit"},
 		}
 
+		assert.NoError(t, err)
 		assert.Equal(t, expectedIngredients, ingredients)
 	})
 }
