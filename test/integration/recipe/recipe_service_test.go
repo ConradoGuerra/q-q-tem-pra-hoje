@@ -148,4 +148,17 @@ func TestAddRecipe(t *testing.T) {
 
 		assert.Equal(t, newRecipe, retrievedRecipe)
 	})
+
+	t.Run("should throws an error if the same recipe exists", func(t *testing.T) {
+		ingredients := []ingredient.Ingredient{
+			{Name: "Onion", MeasureType: "unit", Quantity: 1},
+			{Name: "Rice", MeasureType: "mg", Quantity: 500},
+			{Name: "Garlic", MeasureType: "unit", Quantity: 2},
+		}
+
+		newRecipe := recipe.Recipe{Name: "Rice with Onion and Garlic", Ingredients: ingredients}
+		err := service.AddRecipe(newRecipe)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "Failed to insert recipe: pq: duplicate key value violates unique constraint")
+	})
 }
