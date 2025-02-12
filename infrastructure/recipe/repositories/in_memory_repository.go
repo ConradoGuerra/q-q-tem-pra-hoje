@@ -18,6 +18,6 @@ func (m *InMemoryRecipeManager) AddRecipe(recipe recipe.Recipe) error {
 	return nil
 }
 
-func (m *InMemoryRecipeManager) GetAllRecipes() []recipe.Recipe {
-	return m.Recipes
+func (m *InMemoryRecipeManager) GetAllRecipes() ([]recipe.Recipe, error) {
+	return m.Recipes, nil
 }

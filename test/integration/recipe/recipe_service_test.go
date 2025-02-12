@@ -6,6 +6,7 @@ import (
 	"os"
 	"q-q-tem-pra-hoje/domain/ingredient"
 	"q-q-tem-pra-hoje/domain/recipe"
+	"q-q-tem-pra-hoje/internal/postgres"
 	"testing"
 
 	"github.com/joho/godotenv"
@@ -17,7 +18,7 @@ func setupDatabase(t *testing.T) *sql.DB {
 	err := godotenv.Load("../../../.env")
 
 	if err != nil {
-		t.Fatalf("Error loading .env files: %v", err)
+		t.Fatalf("error loading .env files: %v", err)
 	}
 
 	dbHost := os.Getenv("DB_HOST")
@@ -29,16 +30,15 @@ func setupDatabase(t *testing.T) *sql.DB {
 	connStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		dbHost, dbPort, dbUser, dbPassword, dbName)
 
-	db, err := sql.Open("postgres",
-		connStr)
+	db, err := sql.Open("postgres", connStr)
 
 	if err != nil {
-		t.Fatalf("Failed to connect to the database: %v", err)
+		t.Fatalf("failed to connect to the database: %v", err)
 	}
 
 	_, err = db.Exec("CREATE TABLE IF NOT EXISTS recipes (id SERIAL PRIMARY KEY, name TEXT NOT NULL UNIQUE);")
 	if err != nil {
-		t.Fatalf("Failed to creat table recipes: %v", err)
+		t.Fatalf("failed to create table recipes: %v", err)
 	}
 
 	_, err = db.Exec(`
@@ -51,7 +51,7 @@ func setupDatabase(t *testing.T) *sql.DB {
     `)
 
 	if err != nil {
-		t.Fatalf("Failed to creat table recipes_ingredients: %v", err)
+		t.Fatalf("failed to create table recipes_ingredients: %v", err)
 	}
 
 	return db
@@ -61,89 +61,16 @@ func teardownDatabase(db *sql.DB, t *testing.T) {
 	_, err := db.Exec(`DROP TABLE recipes_ingredients`)
 
 	if err != nil {
-		t.Fatalf("Failed to drop table recipes_ingredients: %v", err)
+		t.Fatalf("failed to drop table recipes_ingredients: %v", err)
 	}
 
 	_, err = db.Exec(`DROP TABLE recipes`)
 
 	if err != nil {
-		t.Fatalf("Failed to drop table recipes: %v", err)
+		t.Fatalf("failed to drop table recipes: %v", err)
 	}
 
 	db.Close()
-}
-
-type PostgreSQLRecipeManager struct {
-	*sql.DB
-}
-
-func (m PostgreSQLRecipeManager) AddRecipe(recipe recipe.Recipe) error {
-	var recipeID int
-	err := m.QueryRow("INSERT INTO recipes (name) VALUES ($1) RETURNING id;", recipe.Name).Scan(&recipeID)
-	if err != nil {
-		return fmt.Errorf("Failed to insert recipe: %v", err)
-	}
-
-	for _, ing := range recipe.Ingredients {
-		_, err = m.Exec(`
-		      INSERT INTO recipes_ingredients (recipe_id, name, measure_type, quantity)
-		      VALUES ($1, $2, $3, $4)
-		      ON CONFLICT (recipe_id, name) DO NOTHING;
-		  `, recipeID, ing.Name, ing.MeasureType, ing.Quantity)
-		if err != nil {
-			return fmt.Errorf("Failed to insert ingredient: %v", err)
-		}
-	}
-	return nil
-}
-func (m PostgreSQLRecipeManager) GetAllRecipes() []recipe.Recipe {
-	rows, err := m.Query(`SELECT 
-                          r.name, 
-                          i.name, 
-                          i.measure_type, 
-                          i.quantity 
-                        FROM recipes r 
-                          JOIN recipes_ingredients i ON r.id = i.recipe_id`)
-
-	if err != nil {
-		fmt.Errorf("Error on query recipe: %v", err)
-	}
-
-	recipeMap := make(map[string]*recipe.Recipe)
-
-	for rows.Next() {
-		var recipeName string
-		var ingredientRetrieved ingredient.Ingredient
-
-		err := rows.Scan(&recipeName, &ingredientRetrieved.Name, &ingredientRetrieved.MeasureType, &ingredientRetrieved.Quantity)
-		if err != nil {
-			fmt.Errorf("Failed to scan row: %v", err)
-		}
-
-		// Check if the recipe already exists in the map
-		if r, exists := recipeMap[recipeName]; exists {
-			// Append the ingredient to the existing recipe
-			r.Ingredients = append(r.Ingredients, ingredientRetrieved)
-		} else {
-			// Create a new recipe and add it to the map and slice
-			newRecipe := &recipe.Recipe{ // Use a pointer to the recipe
-				Name:        recipeName,
-				Ingredients: []ingredient.Ingredient{ingredientRetrieved},
-			}
-			recipeMap[recipeName] = newRecipe
-		}
-	}
-
-	if err := rows.Err(); err != nil {
-		fmt.Errorf("Error iterating rows: %v", err)
-	}
-
-	var recipesRetrieved []recipe.Recipe
-	for _, r := range recipeMap {
-		recipesRetrieved = append(recipesRetrieved, *r) 
-	}
-
-	return recipesRetrieved
 }
 
 func TestAddRecipe(t *testing.T) {
@@ -153,7 +80,7 @@ func TestAddRecipe(t *testing.T) {
 		teardownDatabase(db, t)
 	})
 
-	recipeManager := PostgreSQLRecipeManager{db}
+	recipeManager := postgres.NewRecipeManager(db)
 
 	service := recipe.NewRecipeService(recipeManager)
 	t.Run("should add a recipe in database", func(t *testing.T) {
@@ -166,7 +93,7 @@ func TestAddRecipe(t *testing.T) {
 		newRecipe := recipe.Recipe{Name: "Rice with Onion and Garlic", Ingredients: ingredients}
 		err := service.AddRecipe(newRecipe)
 		if err != nil {
-			t.Errorf("Error on addRecipe: %v", err)
+			t.Errorf("error at addRecipe: %v", err)
 		}
 		rows, err := db.Query(`SELECT 
                               r.name, 
@@ -178,7 +105,7 @@ func TestAddRecipe(t *testing.T) {
                             WHERE r.name = $1`, newRecipe.Name)
 
 		if err != nil {
-			t.Errorf("Error on query recipe: %v", err)
+			t.Errorf("error on query recipe: %v", err)
 		}
 
 		var retrievedRecipe recipe.Recipe
@@ -186,7 +113,7 @@ func TestAddRecipe(t *testing.T) {
 			var ing ingredient.Ingredient
 			err := rows.Scan(&retrievedRecipe.Name, &ing.Name, &ing.MeasureType, &ing.Quantity)
 			if err != nil {
-				t.Fatalf("Failed to scan row: %v", err)
+				t.Fatalf("failed to scan row: %v", err)
 			}
 			retrievedRecipe.Ingredients = append(retrievedRecipe.Ingredients, ing)
 		}
@@ -205,7 +132,7 @@ func TestAddRecipe(t *testing.T) {
 		newRecipe := recipe.Recipe{Name: "Rice with Onion and Garlic", Ingredients: ingredients}
 		err := service.AddRecipe(newRecipe)
 		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "Failed to insert recipe: pq: duplicate key value violates unique constraint")
+		assert.Contains(t, err.Error(), "failed to insert recipe: pq: duplicate key value violates unique constraint")
 	})
 }
 
@@ -241,7 +168,7 @@ func TestCreateRecommendations(t *testing.T) {
 		var recipeID int
 		err := db.QueryRow("INSERT INTO recipes (name) VALUES ($1) RETURNING id;", recipe.Name).Scan(&recipeID)
 		if err != nil {
-			t.Fatalf("Failed to insert recipe %q: %v", recipe.Name, err)
+			t.Fatalf("failed to insert recipe %q: %v", recipe.Name, err)
 		}
 
 		// Insert ingredients for the recipe
@@ -252,11 +179,12 @@ func TestCreateRecommendations(t *testing.T) {
                 ON CONFLICT (recipe_id, name) DO NOTHING;
             `, recipeID, ing.Name, ing.MeasureType, ing.Quantity)
 			if err != nil {
-				t.Fatalf("Failed to insert ingredient %q for recipe %q: %v", ing.Name, recipe.Name, err)
+				t.Fatalf("failed to insert ingredient %q for recipe %q: %v", ing.Name, recipe.Name, err)
 			}
 		}
 	}
-	recipeManager := PostgreSQLRecipeManager{db}
+
+	recipeManager := postgres.NewRecipeManager(db)
 
 	service := recipe.NewRecipeService(recipeManager)
 
@@ -267,7 +195,7 @@ func TestCreateRecommendations(t *testing.T) {
 			{Name: "Rice", MeasureType: "mg", Quantity: 500},
 		}
 
-		recommendations := service.CreateRecommendations(&availableIngredients)
+		recommendations, err := service.CreateRecommendations(&availableIngredients)
 		expectedRecommendations := []recipe.Recommendation{
 			{Recommendation: 1, Recipe: recipes[2]},
 			{Recommendation: 2, Recipe: recipes[0]},
@@ -275,6 +203,9 @@ func TestCreateRecommendations(t *testing.T) {
 			{Recommendation: 4, Recipe: recipes[3]},
 		}
 
+		if err != nil {
+			t.Errorf("error creating the recommendations: %v", err)
+		}
 		assert.Equal(t, expectedRecommendations, recommendations)
 	})
 }

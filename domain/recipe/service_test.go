@@ -88,7 +88,9 @@ func TestRecommendRecipes(t *testing.T) {
 			{Recommendation: 4, Recipe: recipes[3]},
 		}
 
-		recommendations := service.CreateRecommendations(&availableIngredients)
+		recommendations , err:= service.CreateRecommendations(&availableIngredients)
+
+    assert.Empty(t, err)
 		assert.Equal(t, expectedRecommendations, recommendations)
 	})
 }

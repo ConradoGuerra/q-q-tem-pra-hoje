@@ -17,9 +17,11 @@ func (s *RecipeService) CreateRecipe(recipe Recipe) error {
 	return s.AddRecipe(recipe)
 }
 
-func (s *RecipeService) CreateRecommendations(ingredients *[]ingredient.Ingredient) []Recommendation {
-	recipes := s.GetAllRecipes()
-
+func (s *RecipeService) CreateRecommendations(ingredients *[]ingredient.Ingredient) ([]Recommendation, error) {
+	recipes, err := s.GetAllRecipes()
+	if err != nil {
+		return nil, err
+	}
 	availableIngredientMap := make(map[string]bool)
 
 	for _, ing := range *ingredients {
@@ -57,5 +59,5 @@ func (s *RecipeService) CreateRecommendations(ingredients *[]ingredient.Ingredie
 		recommendations = append(recommendations, Recommendation{Recommendation: i + 1, Recipe: scoredRecipe.recipe})
 	}
 
-	return recommendations
+	return recommendations, nil
 }
