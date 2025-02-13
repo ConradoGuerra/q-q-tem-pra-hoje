@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"q-q-tem-pra-hoje/domain/ingredient"
+	"q-q-tem-pra-hoje/internal/postgres"
 	"testing"
 
 	_ "github.com/lib/pq"
@@ -37,7 +38,7 @@ func setupDatabase(t *testing.T) *sql.DB {
 	}
 
 	_, err = db.Exec(`
-        CREATE TABLE IF NOT EXISTS ingredients (
+        CREATE TABLE IF NOT EXISTS ingredients_storage (
             id SERIAL PRIMARY KEY,
             name TEXT NOT NULL,
             measure_type TEXT NOT NULL,
@@ -46,58 +47,20 @@ func setupDatabase(t *testing.T) *sql.DB {
     `)
 
 	if err != nil {
-		t.Fatalf("Failed to create the ingredients table: %v", err)
+		t.Fatalf("Failed to create the ingredients_storage table: %v", err)
 	}
 
 	return db
 }
 
 func teardownDatabase(db *sql.DB, t *testing.T) {
-	if _, err := db.Exec("DROP TABLE IF EXISTS ingredients"); err != nil {
+	if _, err := db.Exec("DROP TABLE IF EXISTS ingredients_storage"); err != nil {
 		t.Fatalf("Failed to drop table: %v", err)
 	}
 
 	if err := db.Close(); err != nil {
 		t.Fatalf("Failed to close db: %v", err)
 	}
-}
-
-type PostgreSQLIngredientManager struct {
-	db *sql.DB
-}
-
-func (m *PostgreSQLIngredientManager) AddIngredient(ingredient ingredient.Ingredient) error {
-	query := "INSERT INTO ingredients (name, measure_type, quantity) VALUES ($1, $2, $3)"
-	_, err := m.db.Exec(query, ingredient.Name, ingredient.MeasureType, ingredient.Quantity)
-	if err != nil {
-		return fmt.Errorf("Failed to add ingredient: %v", err)
-	}
-	return nil
-}
-
-func (m *PostgreSQLIngredientManager) FindIngredients() ([]ingredient.Ingredient, error) {
-	query := "SELECT name, measure_type, sum(quantity) as quantity FROM ingredients GROUP BY name, measure_type;"
-	rows, err := m.db.Query(query)
-
-	if err != nil {
-		return nil, fmt.Errorf("Error executing query: %v", err)
-	}
-	defer rows.Close()
-
-	var ingredients []ingredient.Ingredient
-
-	for rows.Next() {
-		var ingredient ingredient.Ingredient
-
-		err := rows.Scan(&ingredient.Name, &ingredient.MeasureType, &ingredient.Quantity)
-
-		if err != nil {
-			return nil, fmt.Errorf("Error scanning row: %v\n", err)
-		}
-
-		ingredients = append(ingredients, ingredient)
-	}
-	return ingredients, nil
 }
 
 func TestAddIngredientService(t *testing.T) {
@@ -107,7 +70,7 @@ func TestAddIngredientService(t *testing.T) {
 		teardownDatabase(db, t)
 	})
 
-	ingredientManager := PostgreSQLIngredientManager{db}
+	ingredientManager := postgres.NewIngredientStorageManager(db)
 
 	service := ingredient.NewService(&ingredientManager)
 
@@ -119,7 +82,7 @@ func TestAddIngredientService(t *testing.T) {
 		assert.NoError(t, err)
 
 		var ingredientFound ingredient.Ingredient
-		query := "SELECT name, measure_type, quantity FROM ingredients"
+		query := "SELECT name, measure_type, quantity FROM ingredients_storage"
 		err = db.QueryRow(query).Scan(&ingredientFound.Name, &ingredientFound.MeasureType, &ingredientFound.Quantity)
 
 		assert.NoError(t, err)
@@ -134,7 +97,7 @@ func TestFindIngredientsService(t *testing.T) {
 		teardownDatabase(db, t)
 	})
 
-	query := `INSERT INTO ingredients (name, measure_type, quantity) 
+	query := `INSERT INTO ingredients_storage(name, measure_type, quantity) 
             VALUES ($1, $2, $3), ($4, $5, $6);`
 	_, err := db.Exec(query, "onion", "unit", 10, "onion", "unit", 10)
 
@@ -144,7 +107,7 @@ func TestFindIngredientsService(t *testing.T) {
 
 	t.Run("should find aggregated ingredients from the database", func(t *testing.T) {
 
-		ingredientManager := PostgreSQLIngredientManager{db}
+		ingredientManager := postgres.NewIngredientStorageManager(db)
 		ingredientService := ingredient.NewService(&ingredientManager)
 		ingredientsFound, err := ingredientService.FindIngredients()
 
