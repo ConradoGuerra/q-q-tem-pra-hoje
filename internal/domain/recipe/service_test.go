@@ -1,9 +1,9 @@
 package recipe_test
 
 import (
-	"q-q-tem-pra-hoje/domain/ingredient"
-	"q-q-tem-pra-hoje/domain/recipe"
-	"q-q-tem-pra-hoje/infrastructure/recipe/repositories"
+	"q-q-tem-pra-hoje/internal/domain/ingredient"
+	"q-q-tem-pra-hoje/internal/domain/recipe"
+	"q-q-tem-pra-hoje/internal/in_memory_repository"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -16,7 +16,7 @@ func TestAddRecipe(t *testing.T) {
 			{Name: "Onion", MeasureType: "unit", Quantity: 1},
 			{Name: "Rice", MeasureType: "mg", Quantity: 500},
 			{Name: "Garlic", MeasureType: "unit", Quantity: 2}})
-		inMemoryRecipeManager := repositories.NewInMemoryRecipeManager([]recipe.Recipe{})
+		inMemoryRecipeManager := in_memory_repository.NewRecipeManager([]recipe.Recipe{})
 		recipeService := recipe.NewRecipeService(inMemoryRecipeManager)
 
 		recipeService.AddRecipe(expectedRecipe)
@@ -30,7 +30,7 @@ func TestAddRecipe(t *testing.T) {
 			{Name: "Rice", MeasureType: "mg", Quantity: 500},
 			{Name: "Garlic", MeasureType: "unit", Quantity: 2},
 		})
-		manager := repositories.NewInMemoryRecipeManager([]recipe.Recipe{})
+		manager := in_memory_repository.NewRecipeManager([]recipe.Recipe{})
 		service := recipe.NewRecipeService(manager)
 
 		service.CreateRecipe(invalidRecipe)
@@ -41,7 +41,7 @@ func TestAddRecipe(t *testing.T) {
 
 	t.Run("it should return an error for invalid ingredients", func(t *testing.T) {
 		invalidRecipe, err := recipe.NewRecipe("Rice", []ingredient.Ingredient{}) // No ingredients
-		manager := repositories.NewInMemoryRecipeManager([]recipe.Recipe{})
+		manager := in_memory_repository.NewRecipeManager([]recipe.Recipe{})
 		service := recipe.NewRecipeService(manager)
 
 		service.CreateRecipe(invalidRecipe)
@@ -78,7 +78,7 @@ func TestRecommendRecipes(t *testing.T) {
 				{Name: "Potato", MeasureType: "unit", Quantity: 2},
 			}},
 		}
-		repository := repositories.NewInMemoryRecipeManager(recipes)
+		repository := in_memory_repository.NewRecipeManager(recipes)
 		service := recipe.NewRecipeService(repository)
 
 		expectedRecommendations := []recipe.Recommendation{
@@ -88,9 +88,9 @@ func TestRecommendRecipes(t *testing.T) {
 			{Recommendation: 4, Recipe: recipes[3]},
 		}
 
-		recommendations , err:= service.CreateRecommendations(&availableIngredients)
+		recommendations, err := service.CreateRecommendations(&availableIngredients)
 
-    assert.Empty(t, err)
+		assert.Empty(t, err)
 		assert.Equal(t, expectedRecommendations, recommendations)
 	})
 }

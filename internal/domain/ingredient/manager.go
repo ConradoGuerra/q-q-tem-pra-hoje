@@ -1,6 +1,6 @@
 package ingredient
 
-type IngredientManager interface {
+type IngredientStorageManager interface {
 	AddIngredient(Ingredient) error
 	FindIngredients() ([]Ingredient, error)
 }

@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
-	"q-q-tem-pra-hoje/domain/ingredient"
-	"q-q-tem-pra-hoje/domain/recipe"
+	"q-q-tem-pra-hoje/internal/domain/ingredient"
+	"q-q-tem-pra-hoje/internal/domain/recipe"
 	"q-q-tem-pra-hoje/internal/postgres"
 	"testing"
 

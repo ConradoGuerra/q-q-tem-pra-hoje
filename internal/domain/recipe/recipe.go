@@ -2,7 +2,7 @@ package recipe
 
 import (
 	"errors"
-	"q-q-tem-pra-hoje/domain/ingredient"
+	"q-q-tem-pra-hoje/internal/domain/ingredient"
 )
 
 type Recipe struct {

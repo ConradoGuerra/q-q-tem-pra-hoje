@@ -3,18 +3,18 @@ package postgres
 import (
 	"database/sql"
 	"fmt"
-	"q-q-tem-pra-hoje/domain/ingredient"
+	"q-q-tem-pra-hoje/internal/domain/ingredient"
 )
 
-type IngredientStorageManager struct {
+type ingredientStorageManager struct {
 	db *sql.DB
 }
 
-func NewIngredientStorageManager(db *sql.DB) IngredientStorageManager {
-	return IngredientStorageManager{db}
+func NewIngredientStorageManager(db *sql.DB) ingredientStorageManager {
+	return ingredientStorageManager{db}
 }
 
-func (m *IngredientStorageManager) AddIngredient(ingredient ingredient.Ingredient) error {
+func (m *ingredientStorageManager) AddIngredient(ingredient ingredient.Ingredient) error {
 	query := "INSERT INTO ingredients_storage (name, measure_type, quantity) VALUES ($1, $2, $3)"
 	_, err := m.db.Exec(query, ingredient.Name, ingredient.MeasureType, ingredient.Quantity)
 	if err != nil {
@@ -23,7 +23,7 @@ func (m *IngredientStorageManager) AddIngredient(ingredient ingredient.Ingredien
 	return nil
 }
 
-func (m *IngredientStorageManager) FindIngredients() ([]ingredient.Ingredient, error) {
+func (m *ingredientStorageManager) FindIngredients() ([]ingredient.Ingredient, error) {
 	query := "SELECT name, measure_type, sum(quantity) as quantity FROM ingredients_storage GROUP BY name, measure_type;"
 	rows, err := m.db.Query(query)
 

@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
-	"q-q-tem-pra-hoje/domain/ingredient"
+	"q-q-tem-pra-hoje/internal/domain/ingredient"
 	"q-q-tem-pra-hoje/internal/postgres"
 	"testing"
 
@@ -78,7 +78,7 @@ func TestAddIngredientService(t *testing.T) {
 
 	t.Run("it should add ingredients to database", func(t *testing.T) {
 
-		err := service.AddIngredientToInventory(ingredientCreated)
+		err := service.AddIngredientToStorage(ingredientCreated)
 		assert.NoError(t, err)
 
 		var ingredientFound ingredient.Ingredient

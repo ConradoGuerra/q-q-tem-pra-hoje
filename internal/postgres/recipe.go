@@ -3,19 +3,19 @@ package postgres
 import (
 	"database/sql"
 	"fmt"
-	"q-q-tem-pra-hoje/domain/ingredient"
-	"q-q-tem-pra-hoje/domain/recipe"
+	"q-q-tem-pra-hoje/internal/domain/ingredient"
+	"q-q-tem-pra-hoje/internal/domain/recipe"
 )
 
-type RecipeManager struct {
+type recipeManager struct {
 	*sql.DB
 }
 
-func NewRecipeManager(db *sql.DB) *RecipeManager{
-    return &RecipeManager{db}
+func NewRecipeManager(db *sql.DB) *recipeManager{
+    return &recipeManager{db}
 }
 
-func (m RecipeManager) AddRecipe(recipe recipe.Recipe) error {
+func (m recipeManager) AddRecipe(recipe recipe.Recipe) error {
 	var recipeID int
 	err := m.QueryRow("INSERT INTO recipes (name) VALUES ($1) RETURNING id;", recipe.Name).Scan(&recipeID)
 	if err != nil {
@@ -34,7 +34,7 @@ func (m RecipeManager) AddRecipe(recipe recipe.Recipe) error {
 	}
 	return nil
 }
-func (m RecipeManager) GetAllRecipes() ([]recipe.Recipe, error) {
+func (m recipeManager) GetAllRecipes() ([]recipe.Recipe, error) {
 	rows, err := m.Query(`SELECT 
                           r.name, 
                           i.name, 
