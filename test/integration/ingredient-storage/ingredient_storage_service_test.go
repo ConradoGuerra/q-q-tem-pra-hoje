@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"os"
 	"q-q-tem-pra-hoje/internal/domain/ingredient"
-	"q-q-tem-pra-hoje/internal/postgres"
+	"q-q-tem-pra-hoje/internal/repository/postgres"
+	ingredientService "q-q-tem-pra-hoje/internal/service/ingredient"
 	"testing"
 
 	_ "github.com/lib/pq"
@@ -72,7 +73,7 @@ func TestAddIngredientService(t *testing.T) {
 
 	ingredientManager := postgres.NewIngredientStorageManager(db)
 
-	service := ingredient.NewService(&ingredientManager)
+	service := ingredientService.NewService(&ingredientManager)
 
 	ingredientCreated := ingredient.Ingredient{Name: "onion", Quantity: 10, MeasureType: "unit"}
 
@@ -108,7 +109,7 @@ func TestFindIngredientsService(t *testing.T) {
 	t.Run("should find aggregated ingredients from the database", func(t *testing.T) {
 
 		ingredientManager := postgres.NewIngredientStorageManager(db)
-		ingredientService := ingredient.NewService(&ingredientManager)
+		ingredientService := ingredientService.NewService(&ingredientManager)
 		ingredientsFound, err := ingredientService.FindIngredients()
 
 		expectedIngredients := []ingredient.Ingredient{{Name: "onion", MeasureType: "unit", Quantity: 20}}

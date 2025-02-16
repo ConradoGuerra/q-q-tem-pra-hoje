@@ -6,7 +6,8 @@ import (
 	"os"
 	"q-q-tem-pra-hoje/internal/domain/ingredient"
 	"q-q-tem-pra-hoje/internal/domain/recipe"
-	"q-q-tem-pra-hoje/internal/postgres"
+	"q-q-tem-pra-hoje/internal/repository/postgres"
+	recipeService "q-q-tem-pra-hoje/internal/service/recipe"
 	"testing"
 
 	"github.com/joho/godotenv"
@@ -82,7 +83,7 @@ func TestAddRecipe(t *testing.T) {
 
 	recipeManager := postgres.NewRecipeManager(db)
 
-	service := recipe.NewRecipeService(recipeManager)
+	service := recipeService.NewRecipeService(recipeManager)
 	t.Run("should add a recipe in database", func(t *testing.T) {
 		ingredients := []ingredient.Ingredient{
 			{Name: "Onion", MeasureType: "unit", Quantity: 1},
@@ -186,7 +187,7 @@ func TestCreateRecommendations(t *testing.T) {
 
 	recipeManager := postgres.NewRecipeManager(db)
 
-	service := recipe.NewRecipeService(recipeManager)
+	service := recipeService.NewRecipeService(recipeManager)
 
 	t.Run("should create the recommendations", func(t *testing.T) {
 

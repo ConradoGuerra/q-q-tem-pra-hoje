@@ -3,7 +3,8 @@ package recipe_test
 import (
 	"q-q-tem-pra-hoje/internal/domain/ingredient"
 	"q-q-tem-pra-hoje/internal/domain/recipe"
-	"q-q-tem-pra-hoje/internal/in_memory_repository"
+	"q-q-tem-pra-hoje/internal/repository/in_memory_repository"
+	recipeService "q-q-tem-pra-hoje/internal/service/recipe"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -17,7 +18,7 @@ func TestAddRecipe(t *testing.T) {
 			{Name: "Rice", MeasureType: "mg", Quantity: 500},
 			{Name: "Garlic", MeasureType: "unit", Quantity: 2}})
 		inMemoryRecipeManager := in_memory_repository.NewRecipeManager([]recipe.Recipe{})
-		recipeService := recipe.NewRecipeService(inMemoryRecipeManager)
+		recipeService := recipeService.NewRecipeService(inMemoryRecipeManager)
 
 		recipeService.AddRecipe(expectedRecipe)
 		assert.NoError(t, err)
@@ -31,7 +32,7 @@ func TestAddRecipe(t *testing.T) {
 			{Name: "Garlic", MeasureType: "unit", Quantity: 2},
 		})
 		manager := in_memory_repository.NewRecipeManager([]recipe.Recipe{})
-		service := recipe.NewRecipeService(manager)
+		service := recipeService.NewRecipeService(manager)
 
 		service.CreateRecipe(invalidRecipe)
 		assert.Error(t, err)
@@ -42,7 +43,7 @@ func TestAddRecipe(t *testing.T) {
 	t.Run("it should return an error for invalid ingredients", func(t *testing.T) {
 		invalidRecipe, err := recipe.NewRecipe("Rice", []ingredient.Ingredient{}) // No ingredients
 		manager := in_memory_repository.NewRecipeManager([]recipe.Recipe{})
-		service := recipe.NewRecipeService(manager)
+		service := recipeService.NewRecipeService(manager)
 
 		service.CreateRecipe(invalidRecipe)
 		assert.Error(t, err)
@@ -79,7 +80,7 @@ func TestRecommendRecipes(t *testing.T) {
 			}},
 		}
 		repository := in_memory_repository.NewRecipeManager(recipes)
-		service := recipe.NewRecipeService(repository)
+		service := recipeService.NewRecipeService(repository)
 
 		expectedRecommendations := []recipe.Recommendation{
 			{Recommendation: 1, Recipe: recipes[2]},

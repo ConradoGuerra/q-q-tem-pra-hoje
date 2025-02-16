@@ -2,7 +2,8 @@ package ingredient_test
 
 import (
 	"q-q-tem-pra-hoje/internal/domain/ingredient"
-	"q-q-tem-pra-hoje/internal/in_memory_repository"
+	"q-q-tem-pra-hoje/internal/repository/in_memory_repository"
+	ingredientService "q-q-tem-pra-hoje/internal/service/ingredient"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -12,7 +13,7 @@ func TestAddIngredient(t *testing.T) {
 	t.Run("it should add ingredients to inventory", func(t *testing.T) {
 
 		repository := in_memory_repository.NewIngredientStorageManager()
-		ingredientService := ingredient.NewService(&repository)
+		ingredientService := ingredientService.NewService(&repository)
 
 		ingredient := ingredient.Ingredient{Name: "onion", Quantity: 10, MeasureType: "unit"}
 		ingredientService.AddIngredientToStorage(ingredient)
@@ -24,7 +25,7 @@ func TestAddIngredient(t *testing.T) {
 func TestFindIngredients(t *testing.T) {
 	t.Run("it should find all ingredients in the storage and aggregate them", func(t *testing.T) {
 		repository := in_memory_repository.NewIngredientStorageManager()
-		ingredientService := ingredient.NewService(&repository)
+		ingredientService := ingredientService.NewService(&repository)
 
 		ingredientService.AddIngredientToStorage(ingredient.Ingredient{Name: "onion", Quantity: 10, MeasureType: "unit"})
 		ingredientService.AddIngredientToStorage(ingredient.Ingredient{Name: "garlic", Quantity: 2, MeasureType: "unit"})

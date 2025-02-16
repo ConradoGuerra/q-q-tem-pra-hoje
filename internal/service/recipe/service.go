@@ -2,22 +2,23 @@ package recipe
 
 import (
 	"q-q-tem-pra-hoje/internal/domain/ingredient"
+	"q-q-tem-pra-hoje/internal/domain/recipe"
 	"sort"
 )
 
 type RecipeService struct {
-	RecipeManager
+	recipe.RecipeManager
 }
 
-func NewRecipeService(m RecipeManager) *RecipeService {
+func NewRecipeService(m recipe.RecipeManager) *RecipeService {
 	return &RecipeService{RecipeManager: m}
 }
 
-func (s *RecipeService) CreateRecipe(recipe Recipe) error {
+func (s *RecipeService) CreateRecipe(recipe recipe.Recipe) error {
 	return s.AddRecipe(recipe)
 }
 
-func (s *RecipeService) CreateRecommendations(ingredients *[]ingredient.Ingredient) ([]Recommendation, error) {
+func (s *RecipeService) CreateRecommendations(ingredients *[]ingredient.Ingredient) ([]recipe.Recommendation, error) {
 	recipes, err := s.GetAllRecipes()
 	if err != nil {
 		return nil, err
@@ -29,7 +30,7 @@ func (s *RecipeService) CreateRecommendations(ingredients *[]ingredient.Ingredie
 	}
 
 	type RecommendationScore struct {
-		recipe Recipe
+		recipe recipe.Recipe
 		score  int
 	}
 
@@ -53,10 +54,10 @@ func (s *RecipeService) CreateRecommendations(ingredients *[]ingredient.Ingredie
 		return scoredRecipes[i].score > scoredRecipes[j].score
 	})
 
-	var recommendations []Recommendation
+	var recommendations []recipe.Recommendation
 
 	for i, scoredRecipe := range scoredRecipes {
-		recommendations = append(recommendations, Recommendation{Recommendation: i + 1, Recipe: scoredRecipe.recipe})
+		recommendations = append(recommendations, recipe.Recommendation{Recommendation: i + 1, Recipe: scoredRecipe.recipe})
 	}
 
 	return recommendations, nil
