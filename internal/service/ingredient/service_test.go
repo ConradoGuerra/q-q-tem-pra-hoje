@@ -16,7 +16,7 @@ func TestAddIngredient(t *testing.T) {
 		ingredientService := ingredientService.NewService(&repository)
 
 		ingredient := ingredient.Ingredient{Name: "onion", Quantity: 10, MeasureType: "unit"}
-		ingredientService.AddIngredientToStorage(ingredient)
+		ingredientService.Create(ingredient)
 
 		assert.Contains(t, repository.Ingredients, ingredient, "Ingredient should be added to inventory")
 	})
@@ -27,9 +27,9 @@ func TestFindIngredients(t *testing.T) {
 		repository := in_memory_repository.NewIngredientStorageManager()
 		ingredientService := ingredientService.NewService(&repository)
 
-		ingredientService.AddIngredientToStorage(ingredient.Ingredient{Name: "onion", Quantity: 10, MeasureType: "unit"})
-		ingredientService.AddIngredientToStorage(ingredient.Ingredient{Name: "garlic", Quantity: 2, MeasureType: "unit"})
-		ingredientService.AddIngredientToStorage(ingredient.Ingredient{Name: "onion", Quantity: 10, MeasureType: "unit"})
+		ingredientService.Create(ingredient.Ingredient{Name: "onion", Quantity: 10, MeasureType: "unit"})
+		ingredientService.Create(ingredient.Ingredient{Name: "garlic", Quantity: 2, MeasureType: "unit"})
+		ingredientService.Create(ingredient.Ingredient{Name: "onion", Quantity: 10, MeasureType: "unit"})
 
 		ingredients, err := ingredientService.FindIngredients()
 
