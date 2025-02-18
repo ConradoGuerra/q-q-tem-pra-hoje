@@ -73,18 +73,17 @@ func TestIngredientController_Create(t *testing.T) {
 
 		assert.NoError(t, err)
 
-		// Verify the error message
 		assert.Equal(t, "Validation failed", response["message"])
 
-		// Verify the errors slice
 		errors, ok := response["errors"].([]interface{})
 		assert.True(t, ok, "Expected 'errors' to be a slice")
 
-		// Check specific error messages
 		expectedErrors := []string{
-			"name cannot be empty",
-			"measure_type cannot be empty",
+			"ingredient must not be an empty string",
+			"measure_type must not be an empty string",
+			"quantity must be a valid number and superior than 0",
 		}
+
 		for i, expected := range expectedErrors {
 			assert.Equal(t, expected, errors[i])
 		}

@@ -13,10 +13,13 @@ type Ingredient struct {
 func (i *Ingredient) Validate() []error {
 	var invalidations []error
 	if i.Name == "" {
-		invalidations = append(invalidations, errors.New("ingredient must be a not empty string"))
+		invalidations = append(invalidations, errors.New("ingredient must not be an empty string"))
 	}
 	if i.MeasureType == "" {
-		invalidations = append(invalidations, errors.New("measure_type must be a not empty string"))
+		invalidations = append(invalidations, errors.New("measure_type must not be an empty string"))
+	}
+	if i.Quantity < 1 {
+		invalidations = append(invalidations, errors.New("quantity must be a valid number and superior than 0"))
 	}
 	if len(invalidations) != 0 {
 		return invalidations
