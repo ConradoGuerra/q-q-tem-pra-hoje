@@ -2,6 +2,7 @@ package controller
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"q-q-tem-pra-hoje/internal/domain/ingredient"
 )
@@ -36,7 +37,25 @@ func (c IngredientController) Create(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-	c.ingredientService.AddIngredient(ing)
+	err := c.ingredientService.AddIngredient(ing)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+
+		response := map[string]string{"message": "Unexpected error"}
+
+		encodedResponse, err := json.Marshal(response)
+		if err != nil {
+			fmt.Printf("Error while encoding JSON response: %v\n", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("Internal Server Error"))
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(encodedResponse)
+		return
+
+	}
 
 	w.WriteHeader(http.StatusCreated)
 }

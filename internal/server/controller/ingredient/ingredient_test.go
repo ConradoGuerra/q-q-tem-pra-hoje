@@ -3,6 +3,7 @@ package controller_test
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"q-q-tem-pra-hoje/internal/domain/ingredient"
@@ -87,5 +88,26 @@ func TestIngredientController_Create(t *testing.T) {
 		for i, expected := range expectedErrors {
 			assert.Equal(t, expected, errors[i])
 		}
+	})
+
+	t.Run("should return unexpected error if any other error happens", func(t *testing.T) {
+		mockService := MockIngredientService{CreateMock: func(i ingredient.Ingredient) error { return errors.New("Service error") }}
+
+		controler := controller.NewIngredientController(&mockService)
+
+		reqBody := `{"name":"Salt","measure_type":"unit","quantity":1}`
+		req := httptest.NewRequest("POST", "/ingedients", bytes.NewBufferString(reqBody))
+		req.Header.Set("Content-Type", "application/json")
+
+		w := httptest.NewRecorder()
+
+		controler.Create(w, req)
+		assert.Equal(t, http.StatusInternalServerError, w.Code)
+
+		var response map[string]string
+
+		json.NewDecoder(w.Body).Decode(&response)
+
+		assert.Equal(t, "Unexpected error", response["message"])
 	})
 }
