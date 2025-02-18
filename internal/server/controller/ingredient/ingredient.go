@@ -2,7 +2,6 @@ package controller
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"q-q-tem-pra-hoje/internal/domain/ingredient"
 )
@@ -20,41 +19,23 @@ func (c IngredientController) Create(w http.ResponseWriter, r *http.Request) {
 		MeasureType string `json:"measure_type"`
 		Quantity    int    `json:"quantity"`
 	}
-	json.NewDecoder(r.Body).Decode(&input)
 
-	ing, errors := ingredient.NewIngredient(input.Name, input.MeasureType, input.Quantity)
-
-	if errors != nil {
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		errorMessages := make([]string, len(errors))
-		for i, err := range errors {
-			errorMessages[i] = err.Error()
-		}
-
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"message": "Validation failed",
-			"errors":  errorMessages,
+		json.NewEncoder(w).Encode(map[string]string{
+			"message": "Invalid request body",
 		})
 		return
 	}
-	err := c.ingredientService.AddIngredient(ing)
-	if err != nil {
+
+	ing := ingredient.NewIngredient(input.Name, input.MeasureType, input.Quantity)
+
+	if err := c.ingredientService.AddIngredient(ing); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-
-		response := map[string]string{"message": "Unexpected error"}
-
-		encodedResponse, err := json.Marshal(response)
-		if err != nil {
-			fmt.Printf("Error while encoding JSON response: %v\n", err)
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte("Internal Server Error"))
-			return
-		}
-
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(encodedResponse)
+		json.NewEncoder(w).Encode(map[string]string{
+			"message": "Unexpected error",
+		})
 		return
-
 	}
 
 	w.WriteHeader(http.StatusCreated)
