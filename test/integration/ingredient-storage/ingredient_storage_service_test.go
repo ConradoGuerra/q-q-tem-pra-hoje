@@ -19,7 +19,7 @@ func setupDatabase(t *testing.T) *sql.DB {
 	err := godotenv.Load("../../../.env")
 
 	if err != nil {
-		t.Fatalf("Error loading .env file: %v", err)
+		t.Fatalf("error loading .env file: %v", err)
 	}
 
 	dbHost := os.Getenv("DB_HOST")
@@ -35,7 +35,7 @@ func setupDatabase(t *testing.T) *sql.DB {
 	db, err := sql.Open("postgres", connStr)
 
 	if err != nil {
-		t.Fatalf("Failed to connect to the database: %v", err)
+		t.Fatalf("failed to connect to the database: %v", err)
 	}
 
 	_, err = db.Exec(`
@@ -48,7 +48,7 @@ func setupDatabase(t *testing.T) *sql.DB {
     `)
 
 	if err != nil {
-		t.Fatalf("Failed to create the ingredients_storage table: %v", err)
+		t.Fatalf("failed to create the ingredients_storage table: %v", err)
 	}
 
 	return db
@@ -56,11 +56,11 @@ func setupDatabase(t *testing.T) *sql.DB {
 
 func teardownDatabase(db *sql.DB, t *testing.T) {
 	if _, err := db.Exec("DROP TABLE IF EXISTS ingredients_storage"); err != nil {
-		t.Fatalf("Failed to drop table: %v", err)
+		t.Fatalf("failed to drop table: %v", err)
 	}
 
 	if err := db.Close(); err != nil {
-		t.Fatalf("Failed to close db: %v", err)
+		t.Fatalf("failed to close db: %v", err)
 	}
 }
 
@@ -79,7 +79,7 @@ func TestAddIngredientService(t *testing.T) {
 
 	t.Run("it should add ingredients to database", func(t *testing.T) {
 
-		err := service.AddIngredientToStorage(ingredientCreated)
+		err := service.Create(ingredientCreated)
 		assert.NoError(t, err)
 
 		var ingredientFound ingredient.Ingredient

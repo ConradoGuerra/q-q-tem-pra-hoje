@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"q-q-tem-pra-hoje/internal/domain/ingredient"
-	"q-q-tem-pra-hoje/internal/server/controller/ingredient"
+	controller "q-q-tem-pra-hoje/internal/server/controller/ingredient"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
