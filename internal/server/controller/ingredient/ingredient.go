@@ -7,13 +7,13 @@ import (
 )
 
 type IngredientController struct {
-	ingredientService ingredient.IngredientStorageManager
+	ingredientService ingredient.IngredientStorageProvider
 }
 
-func NewIngredientController(s ingredient.IngredientStorageManager) *IngredientController {
-	return &IngredientController{s}
+func NewIngredientController(p ingredient.IngredientStorageProvider) *IngredientController {
+	return &IngredientController{p}
 }
-func (c IngredientController) Create(w http.ResponseWriter, r *http.Request) {
+func (c IngredientController) Add(w http.ResponseWriter, r *http.Request) {
 	var input struct {
 		Name        string `json:"name"`
 		MeasureType string `json:"measure_type"`
@@ -30,7 +30,7 @@ func (c IngredientController) Create(w http.ResponseWriter, r *http.Request) {
 
 	ing := ingredient.NewIngredient(input.Name, input.MeasureType, input.Quantity)
 
-	if err := c.ingredientService.AddIngredient(ing); err != nil {
+	if err := c.ingredientService.Add(ing); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(map[string]string{
 			"message": "Unexpected error",

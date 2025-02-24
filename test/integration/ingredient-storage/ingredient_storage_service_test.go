@@ -79,7 +79,7 @@ func TestAddIngredientService(t *testing.T) {
 
 	t.Run("it should add ingredients to database", func(t *testing.T) {
 
-		err := service.Create(ingredientCreated)
+		err := service.Add(ingredientCreated)
 		assert.NoError(t, err)
 
 		var ingredientFound ingredient.Ingredient

@@ -9,27 +9,27 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestAddIngredient(t *testing.T) {
+func TestIngredientService_Add(t *testing.T) {
 	t.Run("it should add ingredients to inventory", func(t *testing.T) {
 
 		repository := in_memory_repository.NewIngredientStorageManager()
 		ingredientService := ingredientService.NewService(&repository)
 
 		ingredient := ingredient.Ingredient{Name: "onion", Quantity: 10, MeasureType: "unit"}
-		ingredientService.Create(ingredient)
+		ingredientService.Add(ingredient)
 
 		assert.Contains(t, repository.Ingredients, ingredient, "Ingredient should be added to inventory")
 	})
 }
 
-func TestFindIngredients(t *testing.T) {
+func TestIngredientService_FindIngredients(t *testing.T) {
 	t.Run("it should find all ingredients in the storage and aggregate them", func(t *testing.T) {
 		repository := in_memory_repository.NewIngredientStorageManager()
 		ingredientService := ingredientService.NewService(&repository)
 
-		ingredientService.Create(ingredient.Ingredient{Name: "onion", Quantity: 10, MeasureType: "unit"})
-		ingredientService.Create(ingredient.Ingredient{Name: "garlic", Quantity: 2, MeasureType: "unit"})
-		ingredientService.Create(ingredient.Ingredient{Name: "onion", Quantity: 10, MeasureType: "unit"})
+		ingredientService.Add(ingredient.Ingredient{Name: "onion", Quantity: 10, MeasureType: "unit"})
+		ingredientService.Add(ingredient.Ingredient{Name: "garlic", Quantity: 2, MeasureType: "unit"})
+		ingredientService.Add(ingredient.Ingredient{Name: "onion", Quantity: 10, MeasureType: "unit"})
 
 		ingredients, err := ingredientService.FindIngredients()
 

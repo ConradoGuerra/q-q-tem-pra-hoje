@@ -17,16 +17,16 @@ type MockIngredientService struct {
 	CreateMock func(ingredient.Ingredient) error
 }
 
-func (m *MockIngredientService) AddIngredient(ing ingredient.Ingredient) error {
-	m.ing = ing
-	return m.CreateMock(ing)
+func (s *MockIngredientService) Add(ing ingredient.Ingredient) error {
+	s.ing = ing
+	return s.CreateMock(ing)
 }
 
-func (m *MockIngredientService) FindIngredients() ([]ingredient.Ingredient, error) {
+func (s *MockIngredientService) FindIngredients() ([]ingredient.Ingredient, error) {
 	return []ingredient.Ingredient{{}}, nil
 }
 
-func TestIngredientController_Create(t *testing.T) {
+func TestIngredientController_Add(t *testing.T) {
 	tests := []struct {
 		name           string
 		requestBody    string
@@ -76,7 +76,7 @@ func TestIngredientController_Create(t *testing.T) {
 			req.Header.Set("Content-Type", "application/json")
 			w := httptest.NewRecorder()
 
-			controller.Create(w, req)
+			controller.Add(w, req)
 
 			assert.Equal(t, tt.expectedStatus, w.Code)
 			if tt.expectedBody != "" {
