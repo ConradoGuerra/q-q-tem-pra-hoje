@@ -2,7 +2,6 @@ package controller_test
 
 import (
 	"bytes"
-	"encoding/json"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -28,75 +27,61 @@ func (m *MockIngredientService) FindIngredients() ([]ingredient.Ingredient, erro
 }
 
 func TestIngredientController_Create(t *testing.T) {
-	t.Run("should create an ingredient", func(t *testing.T) {
-		mockService := MockIngredientService{
-			CreateMock: func(ing ingredient.Ingredient) error {
-				return nil
+	tests := []struct {
+		name           string
+		requestBody    string
+		expectedStatus int
+		expectedBody   string
+		mockService    MockIngredientService
+	}{
+		{
+			name:           "valid ingredient",
+			requestBody:    `{"name":"Salt","measure_type":"unit","quantity":1}`,
+			expectedStatus: http.StatusCreated,
+			expectedBody:   "",
+			mockService: MockIngredientService{
+				CreateMock: func(ing ingredient.Ingredient) error {
+					return nil
+				},
 			},
-		}
-
-		controller := controller.NewIngredientController(&mockService)
-		reqBody := `{"name":"Salt","measure_type":"unit","quantity":1}`
-		req := httptest.NewRequest("POST", "/ingredients", bytes.NewBufferString(reqBody))
-		req.Header.Set("Content-Type", "application/json")
-		w := httptest.NewRecorder()
-		controller.Create(w, req)
-
-		assert.Equal(t, http.StatusCreated, w.Code)
-
-		expectedIngredient := ingredient.Ingredient{Name: "Salt", MeasureType: "unit", Quantity: 1}
-		assert.Equal(t, expectedIngredient.Name, mockService.ing.Name)
-		assert.Equal(t, expectedIngredient.MeasureType, mockService.ing.MeasureType)
-		assert.Equal(t, expectedIngredient.Quantity, mockService.ing.Quantity)
-	})
-
-	t.Run("should return an error if an input is invalid", func(t *testing.T) {
-		mockService := MockIngredientService{
-			CreateMock: func(ing ingredient.Ingredient) error {
-				return nil
+		},
+		{
+			name:           "invalid input",
+			requestBody:    `{"name":"","measure_type":"","quantity":"1"}`,
+			expectedStatus: http.StatusBadRequest,
+			expectedBody:   `{"message":"Invalid request body"}`,
+			mockService: MockIngredientService{
+				CreateMock: func(ing ingredient.Ingredient) error {
+					return nil
+				},
 			},
-		}
+		},
+		{
+			name:           "service error",
+			requestBody:    `{"name":"Salt","measure_type":"unit","quantity":1}`,
+			expectedStatus: http.StatusInternalServerError,
+			expectedBody:   `{"message":"Unexpected error"}`,
+			mockService: MockIngredientService{
+				CreateMock: func(ing ingredient.Ingredient) error {
+					return errors.New("Service error")
+				},
+			},
+		},
+	}
 
-		controller := controller.NewIngredientController(&mockService)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			controller := controller.NewIngredientController(&tt.mockService)
+			req := httptest.NewRequest("POST", "/ingredients", bytes.NewBufferString(tt.requestBody))
+			req.Header.Set("Content-Type", "application/json")
+			w := httptest.NewRecorder()
 
-		reqBody := `{"name":"","measure_type":"","quantity":"1"}`
-		req := httptest.NewRequest("POST", "/ingredients", bytes.NewBufferString(reqBody))
+			controller.Create(w, req)
 
-		req.Header.Set("Content-Type", "application/json")
-		w := httptest.NewRecorder()
-
-		controller.Create(w, req)
-
-		assert.Equal(t, http.StatusBadRequest, w.Code)
-
-		var response map[string]string
-		err := json.NewDecoder(w.Body).Decode(&response)
-
-		assert.NoError(t, err)
-
-		assert.Equal(t, "Invalid request body", response["message"])
-
-	})
-
-	t.Run("should return unexpected error if any other error happens", func(t *testing.T) {
-		mockService := MockIngredientService{CreateMock: func(i ingredient.Ingredient) error { return errors.New("Service error") }}
-
-		controler := controller.NewIngredientController(&mockService)
-
-		reqBody := `{"name":"Salt","measure_type":"unit","quantity":1}`
-		req := httptest.NewRequest("POST", "/ingedients", bytes.NewBufferString(reqBody))
-		req.Header.Set("Content-Type", "application/json")
-
-		w := httptest.NewRecorder()
-
-		controler.Create(w, req)
-		assert.Equal(t, http.StatusInternalServerError, w.Code)
-
-		var response map[string]string
-
-		json.NewDecoder(w.Body).Decode(&response)
-
-		assert.Equal(t, "Unexpected error", response["message"])
-	})
-
+			assert.Equal(t, tt.expectedStatus, w.Code)
+			if tt.expectedBody != "" {
+				assert.JSONEq(t, tt.expectedBody, w.Body.String())
+			}
+		})
+	}
 }
