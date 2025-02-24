@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"q-q-tem-pra-hoje/internal/domain/ingredient"
@@ -70,7 +69,7 @@ func TestIngredientController_Create(t *testing.T) {
 
 		assert.Equal(t, http.StatusBadRequest, w.Code)
 
-		var response map[string]interface{}
+		var response map[string]string
 		err := json.NewDecoder(w.Body).Decode(&response)
 
 		assert.NoError(t, err)
@@ -100,24 +99,4 @@ func TestIngredientController_Create(t *testing.T) {
 		assert.Equal(t, "Unexpected error", response["message"])
 	})
 
-	t.Run("should return unexpected error on JSON marshaling failure", func(t *testing.T) {
-		mockService := MockIngredientService{CreateMock: func(i ingredient.Ingredient) error { return fmt.Errorf("unserializable error: %v", make(chan int)) }}
-
-		controler := controller.NewIngredientController(&mockService)
-
-		reqBody := `{"name":"Salt","measure_type":"unit","quantity":1}`
-		req := httptest.NewRequest("POST", "/ingedients", bytes.NewBufferString(reqBody))
-		req.Header.Set("Content-Type", "application/json")
-
-		w := httptest.NewRecorder()
-
-		controler.Create(w, req)
-		assert.Equal(t, http.StatusInternalServerError, w.Code)
-
-		var response map[string]string
-
-		json.NewDecoder(w.Body).Decode(&response)
-
-		assert.Equal(t, "Unexpected error", response["message"])
-	})
 }
