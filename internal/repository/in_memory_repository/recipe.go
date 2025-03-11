@@ -13,11 +13,11 @@ func NewRecipeManager(recipes []recipe.Recipe) *recipeManager {
 	return &recipeManager{}
 }
 
-func (m *recipeManager) AddRecipe(recipe recipe.Recipe) error {
-	m.Recipes = append(m.Recipes, recipe)
+func (rm *recipeManager) AddRecipe(recipe recipe.Recipe) error {
+	rm.Recipes = append(rm.Recipes, recipe)
 	return nil
 }
 
-func (m *recipeManager) GetAllRecipes() ([]recipe.Recipe, error) {
-	return m.Recipes, nil
+func (rm *recipeManager) GetAllRecipes() ([]recipe.Recipe, error) {
+	return rm.Recipes, nil
 }

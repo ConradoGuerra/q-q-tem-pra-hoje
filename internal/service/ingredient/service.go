@@ -12,10 +12,10 @@ func NewService(ingredientStorageManager ingredient.IngredientStorageManager) *I
 }
 
 // Implements method
-func (i *IngredientStorageService) Add(ingredient ingredient.Ingredient) error {
-	return i.ingredientStorageManager.AddIngredient(ingredient)
+func (iss *IngredientStorageService) Add(ingredient ingredient.Ingredient) error {
+	return iss.ingredientStorageManager.AddIngredient(ingredient)
 }
 
-func (i *IngredientStorageService) FindIngredients() ([]ingredient.Ingredient, error) {
-	return i.ingredientStorageManager.FindIngredients()
+func (iss *IngredientStorageService) FindIngredients() ([]ingredient.Ingredient, error) {
+	return iss.ingredientStorageManager.FindIngredients()
 }

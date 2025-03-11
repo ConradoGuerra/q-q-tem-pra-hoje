@@ -11,19 +11,19 @@ type recipeManager struct {
 	*sql.DB
 }
 
-func NewRecipeManager(db *sql.DB) *recipeManager{
-    return &recipeManager{db}
+func NewRecipeManager(db *sql.DB) *recipeManager {
+	return &recipeManager{db}
 }
 
-func (m recipeManager) AddRecipe(recipe recipe.Recipe) error {
+func (rm recipeManager) AddRecipe(recipe recipe.Recipe) error {
 	var recipeID int
-	err := m.QueryRow("INSERT INTO recipes (name) VALUES ($1) RETURNING id;", recipe.Name).Scan(&recipeID)
+	err := rm.QueryRow("INSERT INTO recipes (name) VALUES ($1) RETURNING id;", recipe.Name).Scan(&recipeID)
 	if err != nil {
 		return fmt.Errorf("failed to insert recipe: %v", err)
 	}
 
 	for _, ing := range recipe.Ingredients {
-		_, err = m.Exec(`
+		_, err = rm.Exec(`
 		      INSERT INTO recipes_ingredients (recipe_id, name, measure_type, quantity)
 		      VALUES ($1, $2, $3, $4)
 		      ON CONFLICT (recipe_id, name) DO NOTHING;
@@ -34,8 +34,8 @@ func (m recipeManager) AddRecipe(recipe recipe.Recipe) error {
 	}
 	return nil
 }
-func (m recipeManager) GetAllRecipes() ([]recipe.Recipe, error) {
-	rows, err := m.Query(`SELECT 
+func (rm recipeManager) GetAllRecipes() ([]recipe.Recipe, error) {
+	rows, err := rm.Query(`SELECT 
                           r.name, 
                           i.name, 
                           i.measure_type, 
@@ -60,13 +60,10 @@ func (m recipeManager) GetAllRecipes() ([]recipe.Recipe, error) {
 			return nil, fmt.Errorf("failed to scan row: %v", err)
 		}
 
-		// Check if the recipe already exists in the map
 		if r, exists := recipeMap[recipeName]; exists {
-			// Append the ingredient to the existing recipe
 			r.Ingredients = append(r.Ingredients, ingredientRetrieved)
 		} else {
-			// Create a new recipe and add it to the map and slice
-			newRecipe := &recipe.Recipe{ // Use a pointer to the recipe
+			newRecipe := &recipe.Recipe{
 				Name:        recipeName,
 				Ingredients: []ingredient.Ingredient{ingredientRetrieved},
 			}

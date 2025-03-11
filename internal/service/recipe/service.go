@@ -10,16 +10,16 @@ type RecipeService struct {
 	recipe.RecipeManager
 }
 
-func NewRecipeService(m recipe.RecipeManager) *RecipeService {
-	return &RecipeService{RecipeManager: m}
+func NewRecipeService(rm recipe.RecipeManager) *RecipeService {
+	return &RecipeService{RecipeManager: rm}
 }
 
-func (s *RecipeService) CreateRecipe(recipe recipe.Recipe) error {
-	return s.AddRecipe(recipe)
+func (rs *RecipeService) CreateRecipe(recipe recipe.Recipe) error {
+	return rs.AddRecipe(recipe)
 }
 
-func (s *RecipeService) CreateRecommendations(ingredients *[]ingredient.Ingredient) ([]recipe.Recommendation, error) {
-	recipes, err := s.GetAllRecipes()
+func (rs *RecipeService) CreateRecommendations(ingredients *[]ingredient.Ingredient) ([]recipe.Recommendation, error) {
+	recipes, err := rs.GetAllRecipes()
 	if err != nil {
 		return nil, err
 	}
