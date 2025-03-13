@@ -44,7 +44,7 @@ func (rm recipeManager) GetAllRecipes() ([]recipe.Recipe, error) {
                           JOIN recipes_ingredients i ON r.id = i.recipe_id`)
 
 	if err != nil {
-		return nil, fmt.Errorf("error querying recipes: %w", err) // Use lowercase + wrap error
+		return nil, fmt.Errorf("error querying recipes: %w", err)
 	}
 
 	defer rows.Close()
