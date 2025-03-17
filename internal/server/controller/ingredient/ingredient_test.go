@@ -19,13 +19,13 @@ type MockIngredientService struct {
 	Find    func() ([]ingredient.Ingredient, error)
 }
 
-func (s *MockIngredientService) Add(ing ingredient.Ingredient) error {
-	s.ing = ing
-	return s.AddMock(ing)
+func (mis *MockIngredientService) Add(ing ingredient.Ingredient) error {
+	mis.ing = ing
+	return mis.AddMock(ing)
 }
 
-func (s *MockIngredientService) FindIngredients() ([]ingredient.Ingredient, error) {
-	return s.Find()
+func (mis *MockIngredientService) FindIngredients() ([]ingredient.Ingredient, error) {
+	return mis.Find()
 }
 
 func TestIngredientController_Add(t *testing.T) {

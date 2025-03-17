@@ -14,18 +14,18 @@ func NewIngredientStorageManager(db *sql.DB) ingredientStorageManager {
 	return ingredientStorageManager{db}
 }
 
-func (m *ingredientStorageManager) AddIngredient(ingredient ingredient.Ingredient) error {
+func (ism *ingredientStorageManager) AddIngredient(ingredient ingredient.Ingredient) error {
 	query := "INSERT INTO ingredients_storage (name, measure_type, quantity) VALUES ($1, $2, $3)"
-	_, err := m.db.Exec(query, ingredient.Name, ingredient.MeasureType, ingredient.Quantity)
+	_, err := ism.db.Exec(query, ingredient.Name, ingredient.MeasureType, ingredient.Quantity)
 	if err != nil {
 		return fmt.Errorf("failed to add ingredient: %v", err)
 	}
 	return nil
 }
 
-func (m *ingredientStorageManager) FindIngredients() ([]ingredient.Ingredient, error) {
+func (ism *ingredientStorageManager) FindIngredients() ([]ingredient.Ingredient, error) {
 	query := "SELECT name, measure_type, sum(quantity) as quantity FROM ingredients_storage GROUP BY name, measure_type;"
-	rows, err := m.db.Query(query)
+	rows, err := ism.db.Query(query)
 
 	if err != nil {
 		return nil, fmt.Errorf("error executing query: %v", err)
