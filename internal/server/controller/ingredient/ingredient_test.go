@@ -30,6 +30,7 @@ func (mis *MockIngredientService) FindIngredients() ([]ingredient.Ingredient, er
 
 func TestIngredientController_Add(t *testing.T) {
 	tests := []struct {
+		method         string
 		name           string
 		requestBody    string
 		expectedStatus int
@@ -37,6 +38,7 @@ func TestIngredientController_Add(t *testing.T) {
 		mockService    MockIngredientService
 	}{
 		{
+			method:         "POST",
 			name:           "valid ingredient",
 			requestBody:    `{"name":"Salt","measure_type":"unit","quantity":1}`,
 			expectedStatus: http.StatusCreated,
@@ -48,6 +50,7 @@ func TestIngredientController_Add(t *testing.T) {
 			},
 		},
 		{
+			method:         "POST",
 			name:           "invalid input",
 			requestBody:    `{"name":"","measure_type":"","quantity":"1"}`,
 			expectedStatus: http.StatusBadRequest,
@@ -59,10 +62,23 @@ func TestIngredientController_Add(t *testing.T) {
 			},
 		},
 		{
+			method:         "POST",
 			name:           "service error",
 			requestBody:    `{"name":"Salt","measure_type":"unit","quantity":1}`,
 			expectedStatus: http.StatusInternalServerError,
 			expectedBody:   `{"message":"Unexpected error"}`,
+			mockService: MockIngredientService{
+				AddMock: func(ing ingredient.Ingredient) error {
+					return errors.New("Service error")
+				},
+			},
+		},
+		{
+			method:         "GET",
+			name:           "method http invalid",
+			requestBody:    `{"name":"Salt","measure_type":"unit","quantity":1}`,
+			expectedStatus: http.StatusBadRequest,
+			expectedBody:   `{"message":"Method not allowed"}`,
 			mockService: MockIngredientService{
 				AddMock: func(ing ingredient.Ingredient) error {
 					return errors.New("Service error")
@@ -74,7 +90,7 @@ func TestIngredientController_Add(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			controller := controller.NewIngredientController(&tt.mockService)
-			req := httptest.NewRequest("POST", "/ingredients", bytes.NewBufferString(tt.requestBody))
+			req := httptest.NewRequest(tt.method, "/ingredients", bytes.NewBufferString(tt.requestBody))
 			req.Header.Set("Content-Type", "application/json")
 			w := httptest.NewRecorder()
 
@@ -112,7 +128,7 @@ func TestIngredientController_FindAll(t *testing.T) {
 			t.Fatalf("fail to marshal expected ingredients: %v", err)
 		}
 
-		controller.Find(w, req)
+		controller.FindAll(w, req)
 
 		assert.Equal(t, http.StatusOK, w.Code)
 		assert.JSONEq(t, string(expectedIngredientsJSONData), w.Body.String())
