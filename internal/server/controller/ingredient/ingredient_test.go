@@ -28,6 +28,20 @@ func (mis *MockIngredientService) FindIngredients() ([]ingredient.Ingredient, er
 	return mis.Find()
 }
 
+func TestIngredientController_ServeHTTP(t *testing.T) {
+	t.Run("should return an error if method not implemented", func(t *testing.T) {
+
+		controller := controller.NewIngredientController(&MockIngredientService{})
+		w := httptest.NewRecorder()
+		req := httptest.NewRequest("PUT", "/ingredient", nil)
+
+		controller.ServeHTTP(w, req)
+		assert.JSONEq(t, `{"message":"Method not allowed"}`, w.Body.String())
+		assert.Equal(t, http.StatusMethodNotAllowed, w.Code)
+
+	})
+}
+
 func TestIngredientController_Add(t *testing.T) {
 	tests := []struct {
 		method         string
@@ -73,24 +87,12 @@ func TestIngredientController_Add(t *testing.T) {
 				},
 			},
 		},
-		{
-			method:         "GET",
-			name:           "method http invalid",
-			requestBody:    `{"name":"Salt","measure_type":"unit","quantity":1}`,
-			expectedStatus: http.StatusBadRequest,
-			expectedBody:   `{"message":"Method not allowed"}`,
-			mockService: MockIngredientService{
-				AddMock: func(ing ingredient.Ingredient) error {
-					return errors.New("Service error")
-				},
-			},
-		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			controller := controller.NewIngredientController(&tt.mockService)
-			req := httptest.NewRequest(tt.method, "/ingredients", bytes.NewBufferString(tt.requestBody))
+			req := httptest.NewRequest(tt.method, "/ingredient", bytes.NewBufferString(tt.requestBody))
 			req.Header.Set("Content-Type", "application/json")
 			w := httptest.NewRecorder()
 
@@ -105,8 +107,8 @@ func TestIngredientController_Add(t *testing.T) {
 	}
 }
 
-func TestIngredientController_FindAll(t *testing.T) {
-	t.Run("should find the ingredients", func(t *testing.T) {
+func TestIngredientController_GetAll(t *testing.T) {
+	t.Run("should retrieve all ingredients", func(t *testing.T) {
 
 		expectedIngredients := []ingredient.Ingredient{
 			{Name: "onion", Quantity: 20, MeasureType: "unit"},
@@ -119,7 +121,7 @@ func TestIngredientController_FindAll(t *testing.T) {
 
 		controller := controller.NewIngredientController(&service)
 		w := httptest.NewRecorder()
-		req := httptest.NewRequest("GET", "/ingredients", nil)
+		req := httptest.NewRequest("GET", "/ingredient", nil)
 		req.Header.Set("Content-Type", "application/json")
 
 		expectedIngredientsJSONData, err := json.Marshal(expectedIngredients)
@@ -128,7 +130,7 @@ func TestIngredientController_FindAll(t *testing.T) {
 			t.Fatalf("fail to marshal expected ingredients: %v", err)
 		}
 
-		controller.FindAll(w, req)
+		controller.GetAll(w, req)
 
 		assert.Equal(t, http.StatusOK, w.Code)
 		assert.JSONEq(t, string(expectedIngredientsJSONData), w.Body.String())

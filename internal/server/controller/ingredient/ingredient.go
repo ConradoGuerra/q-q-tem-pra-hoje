@@ -14,15 +14,22 @@ func NewIngredientController(isp ingredient.IngredientStorageProvider) *Ingredie
 	return &IngredientController{isp}
 }
 
-func (ic IngredientController) Add(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "POST" {
-		w.Header().Add("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
+func (ic IngredientController) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodPost:
+		ic.Add(w, r)
+	case http.MethodGet:
+		ic.GetAll(w, r)
+	default:
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusMethodNotAllowed)
 		json.NewEncoder(w).Encode(map[string]string{
 			"message": "Method not allowed",
 		})
-		return
 	}
+}
+
+func (ic IngredientController) Add(w http.ResponseWriter, r *http.Request) {
 	var input struct {
 		Name        string `json:"name"`
 		MeasureType string `json:"measure_type"`
@@ -53,7 +60,7 @@ func (ic IngredientController) Add(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
-func (ic IngredientController) FindAll(w http.ResponseWriter, r *http.Request) {
+func (ic IngredientController) GetAll(w http.ResponseWriter, r *http.Request) {
 
 	var ingredients, _ = ic.ingredientService.FindIngredients()
 

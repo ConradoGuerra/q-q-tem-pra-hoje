@@ -31,7 +31,8 @@ func main() {
 
 	ingredientController := controller.NewIngredientController(service)
 
-	http.HandleFunc("/ingredient", ingredientController.Add)
+	http.Handle("/ingredient", ingredientController)
+
 	fmt.Println("Server started at :8080")
 	if err := http.ListenAndServe(":8080", nil); err != nil {
 		fmt.Printf("Could not start server: %v\n", err)
