@@ -1,5 +1,5 @@
 package recipe
 
 type RecipeProvider interface {
-	Add(Recipe)
+	Add(Recipe) error
 }
