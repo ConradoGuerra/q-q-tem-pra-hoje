@@ -11,6 +11,19 @@ type RecipeController struct {
 	RecipeProvider recipe.RecipeProvider
 }
 
+func (rc RecipeController) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "POST" {
+		rc.Add(w, r)
+		return
+	}
+	w.Header().Add("Content-Type", "application/json")
+	w.WriteHeader(http.StatusBadRequest)
+	json.NewEncoder(w).Encode(map[string]string{
+		"message": "Invalid HTTP Method",
+	})
+	return
+}
+
 func (rc RecipeController) Add(w http.ResponseWriter, r *http.Request) {
 
 	var recipeDTO struct {

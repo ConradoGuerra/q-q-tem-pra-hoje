@@ -23,6 +23,22 @@ func (mrs *MockedRecipeService) Add(rec recipe.Recipe) error {
 	return nil
 }
 
+func TestRecipeController_ServeHTTP(t *testing.T) {
+	t.Run("should return 400 for invalid http method", func(t *testing.T) {
+		service := MockedRecipeService{err: func() error { return nil }}
+		controller := controller.RecipeController{RecipeProvider: &service}
+
+		w := httptest.NewRecorder()
+		body := `{"name":"Rice", "ingredients": [{"name": "Onion", "measureType":"unit","quantity":1}]}`
+		r := httptest.NewRequest("GET", "/recipe", bytes.NewBufferString(body))
+		controller.ServeHTTP(w, r)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+		assert.JSONEq(t, `{"message":"Invalid HTTP Method"}`, w.Body.String())
+
+	})
+}
+
 func TestRecipeController_Add(t *testing.T) {
 	tests := []struct {
 		testCase      string
