@@ -16,7 +16,7 @@ type MockedRecipeService struct {
 	err func() error
 }
 
-func (mrs *MockedRecipeService) Add(rec recipe.Recipe) error {
+func (mrs *MockedRecipeService) Create(rec recipe.Recipe) error {
 	if err := mrs.err(); err != nil {
 		return err
 	}

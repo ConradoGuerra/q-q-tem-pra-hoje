@@ -14,7 +14,7 @@ func NewRecipeService(rm recipe.RecipeManager) *RecipeService {
 	return &RecipeService{RecipeManager: rm}
 }
 
-func (rs *RecipeService) CreateRecipe(recipe recipe.Recipe) error {
+func (rs *RecipeService) Create(recipe recipe.Recipe) error {
 	return rs.AddRecipe(recipe)
 }
 

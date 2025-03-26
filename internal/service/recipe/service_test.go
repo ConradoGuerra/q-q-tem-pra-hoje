@@ -34,7 +34,7 @@ func TestAddRecipe(t *testing.T) {
 		manager := in_memory_repository.NewRecipeManager([]recipe.Recipe{})
 		service := recipeService.NewRecipeService(manager)
 
-		service.CreateRecipe(invalidRecipe)
+		service.Create(invalidRecipe)
 		assert.Error(t, err)
 		assert.Equal(t, "recipe name cannot be empty", err.Error())
 		assert.Equal(t, recipe.Recipe{}, invalidRecipe)
@@ -45,7 +45,7 @@ func TestAddRecipe(t *testing.T) {
 		manager := in_memory_repository.NewRecipeManager([]recipe.Recipe{})
 		service := recipeService.NewRecipeService(manager)
 
-		service.CreateRecipe(invalidRecipe)
+		service.Create(invalidRecipe)
 		assert.Error(t, err)
 		assert.Equal(t, "recipe must have at least one ingredient", err.Error())
 		assert.Equal(t, recipe.Recipe{}, invalidRecipe)

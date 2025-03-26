@@ -39,7 +39,7 @@ func (rc RecipeController) Add(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-	if err := rc.RecipeProvider.Add(recipe.Recipe(recipeDTO)); err != nil {
+	if err := rc.RecipeProvider.Create(recipe.Recipe(recipeDTO)); err != nil {
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(map[string]string{
