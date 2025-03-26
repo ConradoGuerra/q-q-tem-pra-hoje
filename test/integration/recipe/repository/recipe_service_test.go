@@ -16,7 +16,7 @@ import (
 )
 
 func setupDatabase(t *testing.T) *sql.DB {
-	err := godotenv.Load("../../../.env")
+	err := godotenv.Load("../../../../.env")
 
 	if err != nil {
 		t.Fatalf("error loading .env files: %v", err)

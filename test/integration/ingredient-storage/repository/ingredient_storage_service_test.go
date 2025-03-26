@@ -16,7 +16,7 @@ import (
 )
 
 func setupDatabase(t *testing.T) *sql.DB {
-	err := godotenv.Load("../../../.env")
+	err := godotenv.Load("../../../../.env")
 
 	if err != nil {
 		t.Fatalf("error loading .env file: %v", err)
@@ -75,7 +75,7 @@ func TestAddIngredientService(t *testing.T) {
 
 	service := ingredientService.NewService(&ingredientManager)
 
-	ingredientCreated := ingredient.Ingredient{Name: "onion", Quantity: 10, MeasureType: "unit"}
+	ingredientCreated := ingredient.Ingredient{Name: "Salt", Quantity: 1, MeasureType: "unit"}
 
 	t.Run("it should add ingredients to database", func(t *testing.T) {
 
