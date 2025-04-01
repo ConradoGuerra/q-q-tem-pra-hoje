@@ -12,6 +12,26 @@ import (
 	_ "github.com/lib/pq"
 )
 
+func setupServer() (*http.Server, error) {
+	db, err := database.Connect()
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to the database: %w", err)
+	}
+	defer db.Close()
+
+	manager := postgres.NewIngredientStorageManager(db)
+	service := service.NewService(&manager)
+	ingredientController := controller.NewIngredientController(service)
+
+	mux := http.NewServeMux()
+	mux.Handle("/ingredient", ingredientController)
+
+	return &http.Server{
+		Addr:    ":8080",
+		Handler: mux,
+	}, nil
+}
+
 func main() {
 	err := godotenv.Load(".env")
 
@@ -19,22 +39,14 @@ func main() {
 		fmt.Printf("error loading .env file: %v", err)
 	}
 
-	db, err := database.Connect()
+	server, err := setupServer()
 	if err != nil {
-		fmt.Printf("Failed to connect to the database: %v", err)
+		server.ErrorLog.Panicf("Failed to setup server: %v", err)
+		return
 	}
-	defer db.Close()
-
-	manager := postgres.NewIngredientStorageManager(db)
-
-	service := service.NewService(&manager)
-
-	ingredientController := controller.NewIngredientController(service)
-
-	http.Handle("/ingredient", ingredientController)
-
-	fmt.Println("Server started at :8080")
-	if err := http.ListenAndServe(":8080", nil); err != nil {
-		fmt.Printf("Could not start server: %v\n", err)
+	defer server.Close()
+	fmt.Println("Server started at " + server.Addr)
+	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		server.ErrorLog.Panicf("Could not start server: %v\n", err)
 	}
 }
