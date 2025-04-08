@@ -51,3 +51,13 @@ func (rc RecipeController) Add(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 
 }
+
+func (rc RecipeController) GetRecommendation(w http.ResponseWriter, r *http.Request) {
+	recipes := rc.RecipeProvider.GetRecommendations()
+	if err := json.NewDecoder(r.Body).Decode(&recipes); err != nil {
+		w.Header().Add("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(&recipes)
+		return
+	}
+}

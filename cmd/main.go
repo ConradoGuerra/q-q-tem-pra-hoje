@@ -23,6 +23,6 @@ func main() {
 	defer server.Close()
 	fmt.Println("Server started at :8080")
 	if err := server.Start(); err != nil && err != http.ErrServerClosed {
-    panic(err)
+		panic(err)
 	}
 }
