@@ -196,7 +196,7 @@ func TestCreateRecommendations(t *testing.T) {
 			{Name: "Rice", MeasureType: "mg", Quantity: 500},
 		}
 
-		recommendations, err := service.CreateRecommendations(&availableIngredients)
+		recommendations, err := service.GetRecommendations(&availableIngredients)
 		expectedRecommendations := []recipe.Recommendation{
 			{Recommendation: 1, Recipe: recipes[2]},
 			{Recommendation: 2, Recipe: recipes[0]},

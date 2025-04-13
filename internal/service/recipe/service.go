@@ -18,7 +18,7 @@ func (rs *RecipeService) Create(recipe recipe.Recipe) error {
 	return rs.AddRecipe(recipe)
 }
 
-func (rs *RecipeService) CreateRecommendations(ingredients *[]ingredient.Ingredient) ([]recipe.Recommendation, error) {
+func (rs *RecipeService) GetRecommendations(ingredients *[]ingredient.Ingredient) ([]recipe.Recommendation, error) {
 	recipes, err := rs.GetAllRecipes()
 	if err != nil {
 		return nil, err

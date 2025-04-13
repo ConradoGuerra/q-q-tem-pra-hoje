@@ -16,7 +16,7 @@ import (
 
 type MockedRecipeService struct {
 	err             func() error
-	recommendations []recipe.Recipe
+	recommendations []recipe.Recommendation
 }
 
 func (mrs *MockedRecipeService) Create(rec recipe.Recipe) error {
@@ -26,7 +26,9 @@ func (mrs *MockedRecipeService) Create(rec recipe.Recipe) error {
 	return nil
 }
 
-func (mrs *MockedRecipeService) GetRecommendations() []recipe.Recipe { return mrs.recommendations }
+func (mrs *MockedRecipeService) GetRecommendations(ingredient *[]ingredient.Ingredient) ([]recipe.Recommendation, error){
+	return mrs.recommendations, nil
+}
 
 func TestRecipeController_ServeHTTP(t *testing.T) {
 	t.Run("should return 400 for invalid http method", func(t *testing.T) {
@@ -98,32 +100,15 @@ func TestRecipeController_Add(t *testing.T) {
 
 func TestRecipeController_GetRecommendation(t *testing.T) {
 	t.Run("should return the recommendations", func(t *testing.T) {
-		recipes := []recipe.Recipe{
-			{Name: "Rice with Garlic", Ingredients: []ingredient.Ingredient{
-				{Name: "Rice", MeasureType: "mg", Quantity: 500},
-				{Name: "Garlic", MeasureType: "unit", Quantity: 2},
-			}},
-			{Name: "Rice with Onion and Garlic", Ingredients: []ingredient.Ingredient{
-				{Name: "Onion", MeasureType: "unit", Quantity: 1},
-				{Name: "Rice", MeasureType: "mg", Quantity: 500},
-				{Name: "Garlic", MeasureType: "unit", Quantity: 2},
-			}},
-			{Name: "Rice with Onion", Ingredients: []ingredient.Ingredient{
-				{Name: "Onion", MeasureType: "unit", Quantity: 1},
-				{Name: "Rice", MeasureType: "mg", Quantity: 500},
-			}},
-			{Name: "Fries", Ingredients: []ingredient.Ingredient{
-				{Name: "Potato", MeasureType: "unit", Quantity: 2},
-			}},
-		}
-		service := MockedRecipeService{recommendations: recipes}
+    recommendations := []recipe.Recommendation{}
+		service := MockedRecipeService{recommendations: recommendations}
 		controller := controller.RecipeController{RecipeProvider: &service}
 
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("GET", "/recommendations", bytes.NewBufferString("{}"))
 		controller.GetRecommendation(w, r)
 
-		recipeJSON, err := json.Marshal(recipes)
+		recipeJSON, err := json.Marshal(recommendations)
 
 		if err != nil {
 			t.Errorf("fail to Marshal expectedRecipe %v", err)
