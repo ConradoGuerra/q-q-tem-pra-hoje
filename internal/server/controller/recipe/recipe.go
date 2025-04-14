@@ -64,7 +64,15 @@ func (rc RecipeController) GetRecommendation(w http.ResponseWriter, r *http.Requ
 		return
 
 	}
-	recipes, _ := rc.RecipeProvider.GetRecommendations(&ingredients)
+
+	recipes, err := rc.RecipeProvider.GetRecommendations(&ingredients)
+	if err != nil {
+
+		w.Header().Add("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]string{"message": "No recommendations have been created"})
+    return
+	}
+
 	if err := json.NewDecoder(r.Body).Decode(&recipes); err != nil {
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)

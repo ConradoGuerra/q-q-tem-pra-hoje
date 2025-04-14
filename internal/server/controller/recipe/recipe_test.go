@@ -15,8 +15,9 @@ import (
 )
 
 type MockedRecipeService struct {
-	err             func() error
-	recommendations []recipe.Recommendation
+	err                func() error
+	recommendations    []recipe.Recommendation
+	hasRecommendations bool
 }
 
 func (mrs *MockedRecipeService) Create(rec recipe.Recipe) error {
@@ -27,7 +28,10 @@ func (mrs *MockedRecipeService) Create(rec recipe.Recipe) error {
 }
 
 func (mrs *MockedRecipeService) GetRecommendations(ingredient *[]ingredient.Ingredient) ([]recipe.Recommendation, error) {
-	return mrs.recommendations, nil
+	if mrs.hasRecommendations != false {
+		return mrs.recommendations, nil
+	}
+	return nil, errors.New("any error")
 }
 
 type MockerIngredientStorageService struct {
@@ -119,7 +123,7 @@ func TestRecipeController_Add(t *testing.T) {
 func TestRecipeController_GetRecommendation(t *testing.T) {
 	t.Run("should return the recommendations", func(t *testing.T) {
 		recommendations := []recipe.Recommendation{}
-		recipeService := MockedRecipeService{recommendations: recommendations}
+		recipeService := MockedRecipeService{recommendations: recommendations, hasRecommendations: true}
 		ingredientService := MockerIngredientStorageService{findIngredientsCalled: false, hasIngedients: true}
 		controller := controller.RecipeController{RecipeProvider: &recipeService, IngredientProvider: &ingredientService}
 
@@ -136,6 +140,23 @@ func TestRecipeController_GetRecommendation(t *testing.T) {
 
 		assert.Equal(t, http.StatusOK, w.Code)
 		assert.JSONEq(t, string(recipeJSON), w.Body.String())
+
+	})
+
+	t.Run("should return a message", func(t *testing.T) {
+		recommendations := []recipe.Recommendation{}
+		recipeService := MockedRecipeService{recommendations: recommendations, hasRecommendations: false}
+		ingredientService := MockerIngredientStorageService{findIngredientsCalled: false, hasIngedients: true}
+		controller := controller.RecipeController{RecipeProvider: &recipeService, IngredientProvider: &ingredientService}
+
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest("GET", "/recommendations", bytes.NewBufferString("{}"))
+		controller.GetRecommendation(w, r)
+
+		assert.True(t, ingredientService.findIngredientsCalled)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+		assert.JSONEq(t, `{"message": "No recommendations have been created"}`, w.Body.String())
 
 	})
 
