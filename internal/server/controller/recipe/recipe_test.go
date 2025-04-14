@@ -32,6 +32,7 @@ func (mrs *MockedRecipeService) GetRecommendations(ingredient *[]ingredient.Ingr
 
 type MockerIngredientStorageService struct {
 	findIngredientsCalled bool
+	hasIngedients         bool
 }
 
 func (miss *MockerIngredientStorageService) Add(ingredient.Ingredient) error {
@@ -40,7 +41,11 @@ func (miss *MockerIngredientStorageService) Add(ingredient.Ingredient) error {
 
 func (miss *MockerIngredientStorageService) FindIngredients() ([]ingredient.Ingredient, error) {
 	miss.findIngredientsCalled = true
-	return nil, nil
+	if miss.hasIngedients == true {
+
+		return nil, nil
+	}
+	return nil, errors.New("any error")
 }
 
 func TestRecipeController_ServeHTTP(t *testing.T) {
@@ -115,7 +120,7 @@ func TestRecipeController_GetRecommendation(t *testing.T) {
 	t.Run("should return the recommendations", func(t *testing.T) {
 		recommendations := []recipe.Recommendation{}
 		recipeService := MockedRecipeService{recommendations: recommendations}
-		ingredientService := MockerIngredientStorageService{findIngredientsCalled: false}
+		ingredientService := MockerIngredientStorageService{findIngredientsCalled: false, hasIngedients: true}
 		controller := controller.RecipeController{RecipeProvider: &recipeService, IngredientProvider: &ingredientService}
 
 		w := httptest.NewRecorder()
@@ -127,9 +132,26 @@ func TestRecipeController_GetRecommendation(t *testing.T) {
 		if err != nil {
 			t.Errorf("fail to Marshal expectedRecipe %v", err)
 		}
-    assert.True(t, ingredientService.findIngredientsCalled)
+		assert.True(t, ingredientService.findIngredientsCalled)
 
+		assert.Equal(t, http.StatusOK, w.Code)
 		assert.JSONEq(t, string(recipeJSON), w.Body.String())
+
+	})
+
+	t.Run("should return ingredients not found", func(t *testing.T) {
+		recommendations := []recipe.Recommendation{}
+		recipeService := MockedRecipeService{recommendations: recommendations}
+		ingredientService := MockerIngredientStorageService{findIngredientsCalled: false, hasIngedients: false}
+		controller := controller.RecipeController{RecipeProvider: &recipeService, IngredientProvider: &ingredientService}
+
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest("GET", "/recommendations", bytes.NewBufferString("{}"))
+		controller.GetRecommendation(w, r)
+
+		assert.True(t, ingredientService.findIngredientsCalled)
+		assert.Equal(t, http.StatusUnprocessableEntity, w.Code)
+		assert.JSONEq(t, `{"message": "No ingredients found"}`, w.Body.String())
 
 	})
 
