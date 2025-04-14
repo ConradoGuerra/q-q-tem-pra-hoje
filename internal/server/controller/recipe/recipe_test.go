@@ -26,8 +26,21 @@ func (mrs *MockedRecipeService) Create(rec recipe.Recipe) error {
 	return nil
 }
 
-func (mrs *MockedRecipeService) GetRecommendations(ingredient *[]ingredient.Ingredient) ([]recipe.Recommendation, error){
+func (mrs *MockedRecipeService) GetRecommendations(ingredient *[]ingredient.Ingredient) ([]recipe.Recommendation, error) {
 	return mrs.recommendations, nil
+}
+
+type MockerIngredientStorageService struct {
+	findIngredientsCalled bool
+}
+
+func (miss *MockerIngredientStorageService) Add(ingredient.Ingredient) error {
+	return nil
+}
+
+func (miss *MockerIngredientStorageService) FindIngredients() ([]ingredient.Ingredient, error) {
+	miss.findIngredientsCalled = true
+	return nil, nil
 }
 
 func TestRecipeController_ServeHTTP(t *testing.T) {
@@ -100,9 +113,10 @@ func TestRecipeController_Add(t *testing.T) {
 
 func TestRecipeController_GetRecommendation(t *testing.T) {
 	t.Run("should return the recommendations", func(t *testing.T) {
-    recommendations := []recipe.Recommendation{}
-		service := MockedRecipeService{recommendations: recommendations}
-		controller := controller.RecipeController{RecipeProvider: &service}
+		recommendations := []recipe.Recommendation{}
+		recipeService := MockedRecipeService{recommendations: recommendations}
+		ingredientService := MockerIngredientStorageService{findIngredientsCalled: false}
+		controller := controller.RecipeController{RecipeProvider: &recipeService, IngredientProvider: &ingredientService}
 
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("GET", "/recommendations", bytes.NewBufferString("{}"))
@@ -113,6 +127,7 @@ func TestRecipeController_GetRecommendation(t *testing.T) {
 		if err != nil {
 			t.Errorf("fail to Marshal expectedRecipe %v", err)
 		}
+    assert.True(t, ingredientService.findIngredientsCalled)
 
 		assert.JSONEq(t, string(recipeJSON), w.Body.String())
 

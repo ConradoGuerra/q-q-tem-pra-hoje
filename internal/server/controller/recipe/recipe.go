@@ -4,11 +4,13 @@ import (
 	"encoding/json"
 	"net/http"
 	"q-q-tem-pra-hoje/internal/domain/ingredient"
+
 	"q-q-tem-pra-hoje/internal/domain/recipe"
 )
 
 type RecipeController struct {
-	RecipeProvider recipe.RecipeProvider
+	IngredientProvider ingredient.IngredientStorageProvider
+	RecipeProvider     recipe.RecipeProvider
 }
 
 func (rc RecipeController) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -53,12 +55,10 @@ func (rc RecipeController) Add(w http.ResponseWriter, r *http.Request) {
 }
 
 func (rc RecipeController) GetRecommendation(w http.ResponseWriter, r *http.Request) {
-	ingredients := []ingredient.Ingredient{
-		{Name: "onion", Quantity: 20, MeasureType: "unit"},
-		{Name: "garlic", Quantity: 2, MeasureType: "unit"},
-	}
 
-	recipes, _:= rc.RecipeProvider.GetRecommendations(&ingredients)
+	ingredients, _ := rc.IngredientProvider.FindIngredients()
+
+	recipes, _ := rc.RecipeProvider.GetRecommendations(&ingredients)
 	if err := json.NewDecoder(r.Body).Decode(&recipes); err != nil {
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
