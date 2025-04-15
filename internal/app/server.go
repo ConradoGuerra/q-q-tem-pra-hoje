@@ -6,8 +6,10 @@ import (
 	"net/http"
 	"q-q-tem-pra-hoje/internal/database"
 	"q-q-tem-pra-hoje/internal/repository/postgres"
-	controller "q-q-tem-pra-hoje/internal/server/controller/ingredient"
-	service "q-q-tem-pra-hoje/internal/service/ingredient"
+	ingredientController "q-q-tem-pra-hoje/internal/server/controller/ingredient"
+	recipeController "q-q-tem-pra-hoje/internal/server/controller/recipe"
+	ingredientService "q-q-tem-pra-hoje/internal/service/ingredient"
+	recipeService"q-q-tem-pra-hoje/internal/service/recipe"
 )
 
 type Server struct {
@@ -22,12 +24,16 @@ func NewServer() (*Server, error) {
 	}
 	defer db.Close()
 
-	manager := postgres.NewIngredientStorageManager(db)
-	service := service.NewService(&manager)
-	ingredientController := controller.NewIngredientController(service)
+	ism := postgres.NewIngredientStorageManager(db)
+  rm := postgres.NewRecipeManager(db)
+	is := ingredientService.NewService(&ism)
+  rs := recipeService.NewRecipeService(rm)
+	ic := ingredientController.NewIngredientController(is)
+	rc:= recipeController.NewRecipeController(is, rs)
 
 	mux := http.NewServeMux()
-	mux.Handle("/ingredient", ingredientController)
+	mux.Handle("/ingredient", ic)
+	mux.Handle("/recipe", rc)
 
 	return &Server{
 		server: &http.Server{

@@ -13,9 +13,17 @@ type RecipeController struct {
 	RecipeProvider     recipe.RecipeProvider
 }
 
+func NewRecipeController(isp ingredient.IngredientStorageProvider, rp recipe.RecipeProvider) *RecipeController {
+	return &RecipeController{IngredientProvider: isp, RecipeProvider: rp}
+}
+
 func (rc RecipeController) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
 		rc.Add(w, r)
+		return
+	}
+	if r.Method == "GET" {
+		rc.GetRecommendation(w, r)
 		return
 	}
 	w.Header().Add("Content-Type", "application/json")
@@ -70,7 +78,7 @@ func (rc RecipeController) GetRecommendation(w http.ResponseWriter, r *http.Requ
 
 		w.Header().Add("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(map[string]string{"message": "No recommendations have been created"})
-    return
+		return
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&recipes); err != nil {
