@@ -48,7 +48,7 @@ func TestRecipeController_Add(t *testing.T) {
 }
 
 func TestRecipeController_GetRecommendation(t *testing.T) {
-	t.Run("should add a recipe", func(t *testing.T) {
+	t.Run("should provide the recommendations", func(t *testing.T) {
 
 		recipes := []recipe.Recipe{
 			{Name: "Rice with Onion and Garlic", Ingredients: []ingredient.Ingredient{
