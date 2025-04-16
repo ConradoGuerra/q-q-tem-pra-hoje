@@ -22,7 +22,6 @@ func NewServer() (*Server, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to the database: %w", err)
 	}
-	defer db.Close()
 
 	ism := postgres.NewIngredientStorageManager(db)
   rm := postgres.NewRecipeManager(db)
