@@ -203,12 +203,12 @@
           <input type="text" id="ingredientName" placeholder="E.g., Tomato" />
         </div>
         <div class="input-group">
-          <label>Measure Type</label>
-          <input type="text" id="measureType" placeholder="E.g., grams" />
-        </div>
-        <div class="input-group">
           <label>Quantity</label>
           <input type="number" id="quantity" placeholder="E.g., 500" />
+        </div>
+        <div class="input-group">
+          <label>Measure Type</label>
+          <input type="text" id="measureType" placeholder="E.g., grams" />
         </div>
         <button onclick="addIngredient()">Add Ingredient</button>
 
@@ -236,12 +236,12 @@
                 class="ingName"
                 placeholder="Ingredient name"
               />
+              <input type="number" class="ingQuantity" placeholder="Quantity" />
               <input
                 type="text"
                 class="ingMeasure"
                 placeholder="Measure Type"
               />
-              <input type="number" class="ingQuantity" placeholder="Quantity" />
             </div>
           </div>
         </div>
@@ -316,8 +316,8 @@
         newInput.innerHTML = `
                 <div class="ingredient-input">
                     <input type="text" class="ingName" placeholder="Ingredient name">
-                    <input type="text" class="ingMeasure" placeholder="Measure Type" />
                     <input type="number" class="ingQuantity" placeholder="Quantity">
+                    <input type="text" class="ingMeasure" placeholder="Measure Type" />
                 </div>
             `;
         document.getElementById("recipeIngredients").appendChild(newInput);
