@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Recipe Manager</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --primary: #2ecc71;
+        --secondary: #3498db;
+        --dark: #2c3e50;
+        --light: #ecf0f1;
+        --success: #27ae60;
+        --warning: #f39c12;
+      }
+
+      body {
+        font-family: "Poppins", sans-serif;
+        margin: 20px;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        background: linear-gradient(135deg, #1e3799 0%, #0a79df 100%);
+        color: white;
+        min-height: 100vh;
+      }
+
+      .container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 25px;
+      }
+
+      .card {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        backdrop-filter: blur(10px);
+        transition: transform 0.3s ease;
+      }
+
+      .card:hover {
+        transform: translateY(-5px);
+      }
+
+      h1 {
+        text-align: center;
+        color: white;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        margin-bottom: 30px;
+        position: relative;
+      }
+
+      h1::after {
+        content: "";
+        position: absolute;
+        width: 80px;
+        height: 3px;
+        background: var(--primary);
+        bottom: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+
+      .input-group {
+        margin-bottom: 20px;
+      }
+
+      .input-group label {
+        display: block;
+        margin-bottom: 8px;
+        color: var(--light);
+        font-weight: 500;
+      }
+
+      .input-group input {
+        width: 100%;
+        padding: 12px;
+        border: none;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        font-size: 16px;
+        transition: all 0.3s ease;
+      }
+
+      .input-group input:focus {
+        outline: none;
+        background: rgba(255, 255, 255, 0.2);
+        box-shadow: 0 0 0 2px var(--primary);
+      }
+
+      button {
+        background: var(--primary);
+        color: white;
+        border: none;
+        padding: 12px 25px;
+        border-radius: 25px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        width: 100%;
+        margin-top: 10px;
+      }
+
+      button:hover {
+        background: #27ae60;
+      }
+
+      .ingredient-list {
+        margin-top: 20px;
+      }
+
+      .ingredient-item {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .recipe-recommendations {
+        margin-top: 20px;
+      }
+
+      .recipe-card {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 15px;
+      }
+
+      .recipe-card h3 {
+        color: var(--light);
+        margin-bottom: 15px;
+      }
+
+      .ingredient-badge {
+        background: var(--secondary);
+        color: white;
+        padding: 8px 15px;
+        border-radius: 20px;
+        margin: 5px 0;
+        display: inline-block;
+      }
+
+      .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        visibility: hidden;
+      }
+
+      .loading-spinner {
+        border: 4px solid rgba(255, 255, 255, 0.3);
+        border-top: 4px solid var(--primary);
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Responsive styles */
+      @media (max-width: 768px) {
+        .container {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>O que que tem pra hoje?</h1>
+
+    <div class="container">
+      <!-- Ingredient Section -->
+      <div class="card">
+        <h2>Add Ingredient</h2>
+        <div class="input-group">
+          <label>Name</label>
+          <input type="text" id="ingredientName" placeholder="E.g., Tomato" />
+        </div>
+        <div class="input-group">
+          <label>Measure Type</label>
+          <input type="text" id="measureType" placeholder="E.g., grams" />
+        </div>
+        <div class="input-group">
+          <label>Quantity</label>
+          <input type="number" id="quantity" placeholder="E.g., 500" />
+        </div>
+        <button onclick="addIngredient()">Add Ingredient</button>
+
+        <div class="ingredient-list" id="ingredientList"></div>
+      </div>
+
+      <!-- Recipe Section -->
+      <div class="card">
+        <h2>Create Recipe</h2>
+        <div class="input-group">
+          <label>Recipe Name</label>
+          <input
+            type="text"
+            id="recipeName"
+            placeholder="E.g., Spaghetti Carbonara"
+          />
+        </div>
+
+        <div id="recipeIngredients">
+          <div class="input-group">
+            <label>Ingredient</label>
+            <div class="ingredient-input">
+              <input
+                type="text"
+                class="ingName"
+                placeholder="Ingredient name"
+              />
+              <input
+                type="text"
+                class="ingMeasure"
+                placeholder="Measure Type"
+              />
+              <input type="number" class="ingQuantity" placeholder="Quantity" />
+            </div>
+          </div>
+        </div>
+        <button onclick="addRecipeIngredient()" class="secondary">
+          + Add Ingredient
+        </button>
+        <button onclick="createRecipe()">Create Recipe</button>
+      </div>
+
+      <!-- Recommendations Section -->
+      <div class="card">
+        <h2>Recipe Recommendations</h2>
+        <button onclick="getRecommendations()">Get Recommendations</button>
+        <div id="recommendations" class="recipe-recommendations"></div>
+      </div>
+    </div>
+
+    <div class="loading-overlay" id="loadingOverlay">
+      <div class="loading-spinner"></div>
+    </div>
+
+    <script>
+      // Add loading state management
+      function showLoading() {
+        document.getElementById("loadingOverlay").style.visibility = "visible";
+      }
+
+      function hideLoading() {
+        document.getElementById("loadingOverlay").style.visibility = "hidden";
+      }
+
+      // Ingredients
+      async function addIngredient() {
+        showLoading();
+        const ingredient = {
+          name: document.getElementById("ingredientName").value,
+          measure_type: document.getElementById("measureType").value,
+          quantity: parseInt(document.getElementById("quantity").value),
+        };
+
+        await fetch("http://localhost:8080/ingredient", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(ingredient),
+        });
+
+        await getIngredients();
+        hideLoading();
+      }
+
+      async function getIngredients() {
+        const response = await fetch("http://localhost:8080/ingredient");
+        const ingredients = await response.json();
+
+        const list = document.getElementById("ingredientList");
+        list.innerHTML = ingredients
+          .map(
+            (i) =>
+              `<div class="ingredient-item">
+                    ${i.Name} 
+                    <span class="ingredient-badge">${i.Quantity} ${i.MeasureType}</span>
+                </div>`,
+          )
+          .join("");
+      }
+
+      let recipeIngredients = [];
+
+      function addRecipeIngredient() {
+        const newInput = document.createElement("div");
+        newInput.className = "input-group";
+        newInput.innerHTML = `
+                <div class="ingredient-input">
+                    <input type="text" class="ingName" placeholder="Ingredient name">
+                    <input type="text" class="ingMeasure" placeholder="Measure Type" />
+                    <input type="number" class="ingQuantity" placeholder="Quantity">
+                </div>
+            `;
+        document.getElementById("recipeIngredients").appendChild(newInput);
+      }
+
+      async function createRecipe() {
+        showLoading();
+        const ingredients = [];
+        const recipeName = document.getElementById("recipeName").value;
+
+        document.querySelectorAll(".ingredient-input").forEach((input) => {
+          ingredients.push({
+            Name: input.querySelector(".ingName").value,
+            MeasureType: input.querySelector(".ingMeasure").value,
+            Quantity: parseInt(input.querySelector(".ingQuantity").value),
+          });
+        });
+
+        await fetch("http://localhost:8080/recipe", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: recipeName, ingredients }),
+        });
+
+        hideLoading();
+      }
+
+      async function getRecommendations() {
+        showLoading();
+        const response = await fetch("http://localhost:8080/recipe");
+        const recipes = await response.json();
+
+        const container = document.getElementById("recommendations");
+
+        container.innerHTML = recipes
+          .map(
+            (recipe) => `<div class="recipe-card">
+                    <h3>${recipe.Recipe.Name}</h3>
+                    <div>Requires:</div>
+                    ${recipe.Recipe.Ingredients.map(
+                      (ing) =>
+                        `<div class="ingredient-badge">${ing.Name}: ${ing.Quantity} ${ing.MeasureType}</div>`,
+                    ).join("")}
+                </div>
+            `,
+          )
+          .join("");
+
+        hideLoading();
+      }
+
+      // Initial load
+      getIngredients();
+    </script>
+  </body>
+</html>
