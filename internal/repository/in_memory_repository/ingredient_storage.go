@@ -34,3 +34,8 @@ func (ism *ingredientStorageManager) FindIngredients() ([]ingredient.Ingredient,
 	}
 	return ingredientsFound, nil
 }
+
+func (ism *ingredientStorageManager) Update(ingredientParam ingredient.Ingredient) error {
+	ism.Ingredients = []ingredient.Ingredient{ingredientParam}
+	return nil
+}

@@ -11,11 +11,14 @@ func NewService(ingredientStorageManager ingredient.IngredientStorageManager) *I
 	return &IngredientStorageService{ingredientStorageManager}
 }
 
-// Implements method
 func (iss *IngredientStorageService) Add(ingredient ingredient.Ingredient) error {
 	return iss.ingredientStorageManager.AddIngredient(ingredient)
 }
 
 func (iss *IngredientStorageService) FindIngredients() ([]ingredient.Ingredient, error) {
 	return iss.ingredientStorageManager.FindIngredients()
+}
+
+func (iss *IngredientStorageService) Update(ingredient ingredient.Ingredient)  error {
+	return iss.ingredientStorageManager.Update(ingredient)
 }

@@ -42,3 +42,21 @@ func TestIngredientService_FindIngredients(t *testing.T) {
 		assert.Equal(t, expectedIngredients, ingredients)
 	})
 }
+
+func TestIngredientService_UpdateIngredient(t *testing.T) {
+	t.Run("it should update an ingredient value", func(t *testing.T) {
+		repository := in_memory_repository.NewIngredientStorageManager()
+		ingredientService := ingredientService.NewService(&repository)
+
+		ingredientService.Add(ingredient.Ingredient{Name: "onion", Quantity: 10, MeasureType: "unit"})
+
+		err := ingredientService.Update(ingredient.Ingredient{Name: "garlic", Quantity: 1, MeasureType: "unit"})
+
+		expectedIngredients := []ingredient.Ingredient{
+			{Name: "garlic", Quantity: 1, MeasureType: "unit"},
+		}
+
+		assert.NoError(t, err)
+		assert.Equal(t, expectedIngredients, repository.Ingredients)
+	})
+}
