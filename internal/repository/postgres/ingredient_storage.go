@@ -47,3 +47,12 @@ func (ism *ingredientStorageManager) FindIngredients() ([]ingredient.Ingredient,
 	}
 	return ingredients, nil
 }
+
+func (ism *ingredientStorageManager) Update(ingredientParams ingredient.Ingredient) error {
+	query := "UPDATE ingredients_storage SET name = $1, quantity = $2, measure_type = $3 WHERE id = $4"
+	_, err := ism.db.Exec(query, ingredientParams.Name, ingredientParams.Quantity, ingredientParams.MeasureType, ingredientParams.ID)
+	if err != nil {
+		return fmt.Errorf("error to update ingredient: %v", err)
+	}
+	return nil
+}

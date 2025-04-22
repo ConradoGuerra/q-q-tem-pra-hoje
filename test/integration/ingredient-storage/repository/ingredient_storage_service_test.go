@@ -118,3 +118,44 @@ func TestFindIngredientsService(t *testing.T) {
 		assert.Equal(t, expectedIngredients, ingredientsFound)
 	})
 }
+
+func TestUpdateIngredientsService(t *testing.T) {
+	db := setupDatabase(t)
+
+	t.Cleanup(func() {
+		teardownDatabase(db, t)
+	})
+
+	query := `INSERT INTO ingredients_storage(id, name, measure_type, quantity) 
+            VALUES (1, $1, $2, $3), (2, $4, $5, $6);`
+	_, err := db.Exec(query, "onion", "unit", 10, "onion", "unit", 10)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	t.Run("should update an ingredient value", func(t *testing.T) {
+
+		ingredientManager := postgres.NewIngredientStorageManager(db)
+		ingredientService := ingredientService.NewService(&ingredientManager)
+
+		id := 2
+		updatedIngredient := ingredient.Ingredient{ID: &id, Name: "garlic", Quantity: 1, MeasureType: "unit"}
+
+		err := ingredientService.Update(updatedIngredient)
+		if err != nil {
+			t.Fatalf("fail to update an ingredient %v", err)
+		}
+
+		var ingredientFound ingredient.Ingredient
+		query := "SELECT name, measure_type, quantity FROM ingredients_storage WHERE id = 2"
+		err = db.QueryRow(query).Scan(&ingredientFound.Name, &ingredientFound.MeasureType, &ingredientFound.Quantity)
+
+		if err != nil {
+			t.Fatalf("fail to query an ingredient %v", err)
+		}
+
+		expectedIngredient := ingredient.Ingredient{Name: "garlic", MeasureType: "unit", Quantity: 1}
+		assert.Equal(t, expectedIngredient, ingredientFound)
+	})
+}

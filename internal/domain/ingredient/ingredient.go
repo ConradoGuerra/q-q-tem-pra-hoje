@@ -1,6 +1,7 @@
 package ingredient
 
 type Ingredient struct {
+	ID          *int
 	Name        string
 	MeasureType string
 	Quantity    int
