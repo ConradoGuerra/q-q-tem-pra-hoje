@@ -14,17 +14,37 @@ func NewIngredientStorageManager(db *sql.DB) ingredientStorageManager {
 	return ingredientStorageManager{db}
 }
 
-func (ism *ingredientStorageManager) AddIngredient(ingredient ingredient.Ingredient) error {
-	query := "INSERT INTO ingredients_storage (name, measure_type, quantity) VALUES ($1, $2, $3)"
-	_, err := ism.db.Exec(query, ingredient.Name, ingredient.MeasureType, ingredient.Quantity)
+func (ism *ingredientStorageManager) AddIngredient(ingredientParams ingredient.Ingredient) error {
+	query := "SELECT id, quantity FROM ingredients_storage WHERE name = $1;"
+
+	var ingredientFound ingredient.Ingredient
+	err := ism.db.QueryRow(query, ingredientParams.Name).Scan(&ingredientFound.ID, &ingredientFound.Quantity)
 	if err != nil {
-		return fmt.Errorf("failed to add ingredient: %v", err)
+		if err == sql.ErrNoRows {
+			query := "INSERT INTO ingredients_storage (name, measure_type, quantity) VALUES ($1, $2, $3)"
+			_, err := ism.db.Exec(query, ingredientParams.Name, ingredientParams.MeasureType, ingredientParams.Quantity)
+			if err != nil {
+				return fmt.Errorf("failed to add ingredient: %v", err)
+			}
+			return nil
+		}
+		return fmt.Errorf("error executing query: %v", err)
+	}
+
+	newQuantity := ingredientFound.Quantity + ingredientParams.Quantity
+
+	query = "UPDATE ingredients_storage SET quantity = $2 WHERE id = $1"
+
+	_, err = ism.db.Exec(query, ingredientFound.ID, newQuantity)
+	if err != nil {
+		return fmt.Errorf("error to update ingredient: %v", err)
 	}
 	return nil
+
 }
 
 func (ism *ingredientStorageManager) FindIngredients() ([]ingredient.Ingredient, error) {
-	query := "SELECT name, measure_type, sum(quantity) as quantity FROM ingredients_storage GROUP BY name, measure_type;"
+	query := "SELECT name, measure_type, quantity FROM ingredients_storage;"
 	rows, err := ism.db.Query(query)
 
 	if err != nil {

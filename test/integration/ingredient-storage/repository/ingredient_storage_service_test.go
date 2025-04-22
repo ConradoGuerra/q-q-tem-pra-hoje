@@ -76,10 +76,14 @@ func TestAddIngredientService(t *testing.T) {
 	service := ingredientService.NewService(&ingredientManager)
 
 	ingredientCreated := ingredient.Ingredient{Name: "Salt", Quantity: 1, MeasureType: "unit"}
+	secondIngredientCreated := ingredient.Ingredient{Name: "Salt", Quantity: 1, MeasureType: "unit"}
 
 	t.Run("it should add ingredients to database", func(t *testing.T) {
 
 		err := service.Add(ingredientCreated)
+		assert.NoError(t, err)
+
+		err = service.Add(secondIngredientCreated)
 		assert.NoError(t, err)
 
 		var ingredientFound ingredient.Ingredient
@@ -87,7 +91,7 @@ func TestAddIngredientService(t *testing.T) {
 		err = db.QueryRow(query).Scan(&ingredientFound.Name, &ingredientFound.MeasureType, &ingredientFound.Quantity)
 
 		assert.NoError(t, err)
-		assert.Equal(t, ingredientCreated, ingredientFound)
+		assert.Equal(t, ingredient.Ingredient{Name: "Salt", Quantity: 2, MeasureType: "unit"}, ingredientFound)
 	})
 }
 
@@ -100,7 +104,7 @@ func TestFindIngredientsService(t *testing.T) {
 
 	query := `INSERT INTO ingredients_storage(name, measure_type, quantity) 
             VALUES ($1, $2, $3), ($4, $5, $6);`
-	_, err := db.Exec(query, "onion", "unit", 10, "onion", "unit", 10)
+	_, err := db.Exec(query, "onion", "unit", 10, "garlic", "unit", 10)
 
 	if err != nil {
 		t.Fatal(err)
@@ -112,7 +116,7 @@ func TestFindIngredientsService(t *testing.T) {
 		ingredientService := ingredientService.NewService(&ingredientManager)
 		ingredientsFound, err := ingredientService.FindIngredients()
 
-		expectedIngredients := []ingredient.Ingredient{{Name: "onion", MeasureType: "unit", Quantity: 20}}
+		expectedIngredients := []ingredient.Ingredient{{Name: "onion", MeasureType: "unit", Quantity: 10}, {Name: "garlic", MeasureType: "unit", Quantity: 10}}
 
 		assert.NoError(t, err)
 		assert.Equal(t, expectedIngredients, ingredientsFound)
