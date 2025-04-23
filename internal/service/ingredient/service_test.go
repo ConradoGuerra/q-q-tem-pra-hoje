@@ -43,7 +43,7 @@ func TestIngredientService_FindIngredients(t *testing.T) {
 	})
 }
 
-func TestIngredientService_UpdateIngredient(t *testing.T) {
+func TestIngredientService_Update(t *testing.T) {
 	t.Run("it should update an ingredient value", func(t *testing.T) {
 		repository := in_memory_repository.NewIngredientStorageManager()
 		ingredientService := ingredientService.NewService(&repository)

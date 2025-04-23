@@ -64,7 +64,7 @@ func teardownDatabase(db *sql.DB, t *testing.T) {
 	}
 }
 
-func TestAddIngredientService(t *testing.T) {
+func TestIngredientService_Add(t *testing.T) {
 	db := setupDatabase(t)
 
 	t.Cleanup(func() {
@@ -95,7 +95,7 @@ func TestAddIngredientService(t *testing.T) {
 	})
 }
 
-func TestFindIngredientsService(t *testing.T) {
+func TestIngredientService_Find(t *testing.T) {
 	db := setupDatabase(t)
 
 	t.Cleanup(func() {
@@ -123,7 +123,7 @@ func TestFindIngredientsService(t *testing.T) {
 	})
 }
 
-func TestUpdateIngredientsService(t *testing.T) {
+func TestIngredientService_Update(t *testing.T) {
 	db := setupDatabase(t)
 
 	t.Cleanup(func() {

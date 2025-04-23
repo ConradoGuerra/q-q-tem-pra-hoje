@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestAddRecipe(t *testing.T) {
+func TestRecipeService_Add(t *testing.T) {
 	t.Run("it should add a valid recipe", func(t *testing.T) {
 
 		expectedRecipe, err := recipe.NewRecipe("Rice", []ingredient.Ingredient{
@@ -54,7 +54,7 @@ func TestAddRecipe(t *testing.T) {
 
 }
 
-func TestRecommendRecipes(t *testing.T) {
+func TestRecipseService_GetRecommendations(t *testing.T) {
 	t.Run("it should recommend recipes based on quantity of ingredients", func(t *testing.T) {
 		availableIngredients := []ingredient.Ingredient{
 			{Name: "Onion", MeasureType: "unit", Quantity: 1},
