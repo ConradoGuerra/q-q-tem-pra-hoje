@@ -19,6 +19,10 @@ func (iss *IngredientStorageService) FindIngredients() ([]ingredient.Ingredient,
 	return iss.ingredientStorageManager.FindIngredients()
 }
 
-func (iss *IngredientStorageService) Update(ingredient ingredient.Ingredient)  error {
+func (iss *IngredientStorageService) Update(ingredient ingredient.Ingredient) error {
 	return iss.ingredientStorageManager.Update(ingredient)
+}
+
+func (iss *IngredientStorageService) Delete(id uint) error {
+	return iss.ingredientStorageManager.Delete(id)
 }

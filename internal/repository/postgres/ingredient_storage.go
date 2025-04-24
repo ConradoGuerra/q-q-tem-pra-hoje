@@ -76,3 +76,13 @@ func (ism *ingredientStorageManager) Update(ingredientParams ingredient.Ingredie
 	}
 	return nil
 }
+
+func (ism *ingredientStorageManager) Delete(id uint) error {
+  query := "DELETE from ingredients_storage WHERE id = $1"
+  _, err := ism.db.Exec(query, id)
+
+	if err != nil {
+		return fmt.Errorf("error to delete ingredient: %v", err)
+	}
+	return nil
+}
