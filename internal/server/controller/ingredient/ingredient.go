@@ -71,3 +71,25 @@ func (ic IngredientController) GetAll(w http.ResponseWriter, r *http.Request) {
 	w.Write(jsonIngredients)
 
 }
+
+func (ic IngredientController) Update(w http.ResponseWriter, r *http.Request) {
+
+	var input struct {
+		Name        string `json:"name"`
+		MeasureType string `json:"measure_type"`
+		Quantity    int    `json:"quantity"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		http.Error(w, `{"message": "Invalid request body"}`, http.StatusBadRequest)
+		w.Header().Set("Content-Type", "application/json")
+		return
+	}
+	updatedIngredient := ingredient.NewIngredient(input.Name, input.MeasureType, input.Quantity)
+	_ = ic.ingredientService.Update(updatedIngredient)
+
+	w.Header().Add("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	return
+
+}

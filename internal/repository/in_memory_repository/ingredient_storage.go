@@ -39,3 +39,7 @@ func (ism *ingredientStorageManager) Update(ingredientParam ingredient.Ingredien
 	ism.Ingredients = []ingredient.Ingredient{ingredientParam}
 	return nil
 }
+
+func (ism *ingredientStorageManager) Delete(id uint) error {
+	return nil
+}

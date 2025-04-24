@@ -28,6 +28,10 @@ func (mis *MockIngredientService) FindIngredients() ([]ingredient.Ingredient, er
 	return mis.Find()
 }
 
+func (mis *MockIngredientService) Update(ingredient.Ingredient) error {
+	return nil
+}
+
 func TestIngredientController_ServeHTTP(t *testing.T) {
 	t.Run("should return an error if method not implemented", func(t *testing.T) {
 
@@ -134,6 +138,25 @@ func TestIngredientController_GetAll(t *testing.T) {
 
 		assert.Equal(t, http.StatusOK, w.Code)
 		assert.JSONEq(t, string(expectedIngredientsJSONData), w.Body.String())
+		assert.Equal(t, "application/json", w.Header().Get("Content-Type"))
+
+	})
+}
+
+func TestIngredientController_Update(t *testing.T) {
+	t.Run("should update an ingredient", func(t *testing.T) {
+
+		service := MockIngredientService{}
+
+		controller := controller.NewIngredientController(&service)
+		w := httptest.NewRecorder()
+		requestBody := `{"name":"Salt","measure_type":"unit","quantity":1}`
+		req := httptest.NewRequest("PATCH", "/ingredient", bytes.NewBufferString(requestBody))
+		req.Header.Set("Content-Type", "application/json")
+
+		controller.Update(w, req)
+
+		assert.Equal(t, http.StatusOK, w.Code)
 		assert.Equal(t, "application/json", w.Header().Get("Content-Type"))
 
 	})
