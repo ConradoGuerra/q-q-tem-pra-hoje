@@ -52,6 +52,14 @@ func (miss *MockerIngredientStorageService) FindIngredients() ([]ingredient.Ingr
 	return nil, errors.New("any error")
 }
 
+func (miss *MockerIngredientStorageService) Update(ingredient.Ingredient) error {
+	return nil
+}
+
+func (miss *MockerIngredientStorageService) Delete(uint) error {
+	return nil
+}
+
 func TestRecipeController_ServeHTTP(t *testing.T) {
 	t.Run("should return 400 for invalid http method", func(t *testing.T) {
 		service := MockedRecipeService{err: func() error { return nil }}
@@ -59,12 +67,11 @@ func TestRecipeController_ServeHTTP(t *testing.T) {
 
 		w := httptest.NewRecorder()
 		body := `{"name":"Rice", "ingredients": [{"name": "Onion", "measureType":"unit","quantity":1}]}`
-		r := httptest.NewRequest("GET", "/recipe", bytes.NewBufferString(body))
+		r := httptest.NewRequest("PUT", "/recipe", bytes.NewBufferString(body))
 		controller.ServeHTTP(w, r)
 
 		assert.Equal(t, http.StatusBadRequest, w.Code)
 		assert.JSONEq(t, `{"message":"Invalid HTTP Method"}`, w.Body.String())
-
 	})
 }
 
