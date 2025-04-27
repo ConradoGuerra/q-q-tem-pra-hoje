@@ -5,11 +5,13 @@ import (
 	"errors"
 	"net/http"
 	"q-q-tem-pra-hoje/internal/domain/ingredient"
+	"strconv"
 )
 
 var (
 	ErrInvalidRequestBody = errors.New("invalid request body")
 	ErrMethodNotAllowed   = errors.New("method not allowed")
+	ErrInvalidID          = errors.New("invalid id parameter")
 )
 
 type Response struct {
@@ -101,6 +103,27 @@ func (ic *IngredientController) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ic.respondWithJSON(w, http.StatusOK, nil)
+}
+
+func (ic *IngredientController) Delete(w http.ResponseWriter, r *http.Request) {
+	idStr := r.URL.Query().Get("id")
+	if idStr == "" {
+		ic.respondWithError(w, http.StatusBadRequest, ErrInvalidID)
+		return
+	}
+
+	id, err := strconv.ParseUint(idStr, 10, 64)
+	if err != nil {
+		ic.respondWithError(w, http.StatusBadRequest, ErrInvalidID)
+		return
+	}
+
+	if err := ic.service.Delete(uint(id)); err != nil {
+		ic.respondWithError(w, http.StatusInternalServerError, errors.New("failed to delete ingredient"))
+		return
+	}
+
+	ic.respondWithJSON(w, http.StatusNoContent, nil)
 }
 
 func (ic *IngredientController) respondWithError(w http.ResponseWriter, code int, err error) {
