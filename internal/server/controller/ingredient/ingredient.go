@@ -2,94 +2,119 @@ package controller
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"q-q-tem-pra-hoje/internal/domain/ingredient"
 )
 
+var (
+	ErrInvalidRequestBody = errors.New("invalid request body")
+	ErrMethodNotAllowed   = errors.New("method not allowed")
+)
+
+type Response struct {
+	Message string `json:"message,omitempty"`
+	Data    any    `json:"data,omitempty"`
+}
+
 type IngredientController struct {
-	ingredientService ingredient.IngredientStorageProvider
+	service ingredient.IngredientStorageProvider
 }
 
-func NewIngredientController(isp ingredient.IngredientStorageProvider) *IngredientController {
-	return &IngredientController{isp}
+func NewIngredientController(service ingredient.IngredientStorageProvider) *IngredientController {
+	if service == nil {
+		panic("ingredient service cannot be nil")
+	}
+	return &IngredientController{service: service}
 }
 
-func (ic IngredientController) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (ic *IngredientController) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodPost:
 		ic.Add(w, r)
 	case http.MethodGet:
 		ic.GetAll(w, r)
+	case http.MethodPatch:
+		ic.Update(w, r)
 	default:
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		json.NewEncoder(w).Encode(map[string]string{
-			"message": "Method not allowed",
-		})
+		ic.respondWithError(w, http.StatusMethodNotAllowed, ErrMethodNotAllowed)
 	}
 }
 
-func (ic IngredientController) Add(w http.ResponseWriter, r *http.Request) {
-	var input struct {
-		Name        string `json:"name"`
-		MeasureType string `json:"measure_type"`
-		Quantity    int    `json:"quantity"`
-	}
+type IngredientInput struct {
+	Name        string `json:"name"`
+	MeasureType string `json:"measure_type"`
+	Quantity    int    `json:"quantity"`
+}
+
+func (ic *IngredientController) Add(w http.ResponseWriter, r *http.Request) {
+	var input IngredientInput
 
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-		w.Header().Add("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{
-			"message": "Invalid request body",
-		})
+		ic.respondWithError(w, http.StatusBadRequest, ErrInvalidRequestBody)
+		return
+	}
+
+	if input.Name == "" || input.MeasureType == "" {
+		ic.respondWithError(w, http.StatusBadRequest, ErrInvalidRequestBody)
 		return
 	}
 
 	ing := ingredient.NewIngredient(input.Name, input.MeasureType, input.Quantity)
 
-	if err := ic.ingredientService.Add(ing); err != nil {
-		w.Header().Add("Content-Type", "application/json")
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(map[string]string{
-			"message": "Unexpected error",
-		})
+	if err := ic.service.Add(ing); err != nil {
+		ic.respondWithError(w, http.StatusInternalServerError, errors.New("unexpected error"))
 		return
 	}
 
-	w.Header().Add("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
+	ic.respondWithJSON(w, http.StatusCreated, nil)
 }
 
-func (ic IngredientController) GetAll(w http.ResponseWriter, r *http.Request) {
-
-	var ingredients, _ = ic.ingredientService.FindIngredients()
-
-	jsonIngredients, _ := json.Marshal(ingredients)
-
-	w.Header().Add("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(jsonIngredients)
-
-}
-
-func (ic IngredientController) Update(w http.ResponseWriter, r *http.Request) {
-
-	var input struct {
-		Name        string `json:"name"`
-		MeasureType string `json:"measure_type"`
-		Quantity    int    `json:"quantity"`
+func (ic *IngredientController) GetAll(w http.ResponseWriter, r *http.Request) {
+	ingredients, err := ic.service.FindIngredients()
+	if err != nil {
+		ic.respondWithError(w, http.StatusInternalServerError, errors.New("failed to retrieve ingredients"))
+		return
 	}
+
+	ic.respondWithJSON(w, http.StatusOK, ingredients)
+}
+
+func (ic *IngredientController) Update(w http.ResponseWriter, r *http.Request) {
+	var input IngredientInput
 
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-		http.Error(w, `{"message": "Invalid request body"}`, http.StatusBadRequest)
-		w.Header().Set("Content-Type", "application/json")
+		ic.respondWithError(w, http.StatusBadRequest, ErrInvalidRequestBody)
 		return
 	}
+
+	if input.Name == "" || input.MeasureType == "" {
+		ic.respondWithError(w, http.StatusBadRequest, ErrInvalidRequestBody)
+		return
+	}
+
 	updatedIngredient := ingredient.NewIngredient(input.Name, input.MeasureType, input.Quantity)
-	_ = ic.ingredientService.Update(updatedIngredient)
 
-	w.Header().Add("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	return
+	if err := ic.service.Update(updatedIngredient); err != nil {
+		ic.respondWithError(w, http.StatusInternalServerError, errors.New("failed to update ingredient"))
+		return
+	}
 
+	ic.respondWithJSON(w, http.StatusOK, nil)
+}
+
+func (ic *IngredientController) respondWithError(w http.ResponseWriter, code int, err error) {
+	ic.respondWithJSON(w, code, Response{Message: err.Error()})
+}
+
+func (ic *IngredientController) respondWithJSON(w http.ResponseWriter, code int, payload any) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+
+	if payload != nil {
+		if err := json.NewEncoder(w).Encode(payload); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	}
 }
