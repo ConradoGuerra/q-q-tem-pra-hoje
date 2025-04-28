@@ -10,6 +10,7 @@ import (
 	"q-q-tem-pra-hoje/internal/repository/in_memory_repository"
 	controller "q-q-tem-pra-hoje/internal/server/controller/ingredient"
 	service "q-q-tem-pra-hoje/internal/service/ingredient"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -80,4 +81,38 @@ func TestIngredientStorageController_GetAll(t *testing.T) {
 		assert.Equal(t, ingredients, responseIngredients)
 	})
 
+}
+
+func TestIngredientStorageController_Update(t *testing.T) {
+	t.Run("should update an existing ingredient", func(t *testing.T) {
+		repository := in_memory_repository.NewIngredientStorageManager()
+
+		svc := service.NewService(&repository)
+		ctrl := controller.NewIngredientController(svc)
+
+		server := httptest.NewServer(ctrl)
+		updatedData := `{"name": "Salt", "measure_type": "unit", "quantity": 5}`
+		req, err := http.NewRequest(
+			http.MethodPatch,
+			server.URL+"/ingredient/1",
+			strings.NewReader(updatedData))
+
+		if err != nil {
+			t.Fatalf("failed to create request: %v", err)
+		}
+		req.Header.Set("Content-Type", "application/json")
+
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			t.Fatalf("failed to send request: %v", err)
+		}
+		defer resp.Body.Close()
+
+		assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+		updatedIngredient := repository.Ingredients[0]
+		assert.Equal(t, "Salt", updatedIngredient.Name)
+		assert.Equal(t, "unit", updatedIngredient.MeasureType)
+		assert.Equal(t, 5, updatedIngredient.Quantity)
+	})
 }
