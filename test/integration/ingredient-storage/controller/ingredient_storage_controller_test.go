@@ -15,22 +15,28 @@ import (
 
 func TestIngredientStorageController_Add(t *testing.T) {
 	t.Run("should call the service properly", func(t *testing.T) {
-		var repository = in_memory_repository.NewIngredientStorageManager()
-		var service = service.NewService(&repository)
-		var controller = controller.NewIngredientController(service)
 
-		var w = httptest.NewRecorder()
-		var req = httptest.NewRequest("POST", "/ingredients", bytes.NewBufferString(`{"name":"Salt","measure_type":"unit","quantity":1}`))
-		req.Header.Set("Content-Type", "application/json")
+		body := `{"name":"Salt","measure_type":"unit","quantity":1}`
 
-		controller.Add(w, req)
+		repo := in_memory_repository.NewIngredientStorageManager()
 
-		assert.Equal(t, http.StatusCreated, w.Code)
-		assert.Len(t, repository.Ingredients, 1, "repository should contain exactly one ingredient")
+		srvc := service.NewService(&repo)
+		ctrl := controller.NewIngredientController(srvc)
+
+		server := httptest.NewServer(ctrl)
+		defer server.Close()
+
+		resp, err := http.Post(server.URL+"/ingredient", "application/json", bytes.NewBufferString(body))
+		if err != nil {
+			t.Fatalf("failed to add ingredient: %v", err)
+		}
+
+		assert.Equal(t, http.StatusCreated, resp.StatusCode)
+		assert.Len(t, repo.Ingredients, 1, "repository should contain exactly one ingredient")
 
 		expectedIngredient := ingredient.Ingredient{Name: "Salt", MeasureType: "unit", Quantity: 1}
-		assert.Equal(t, expectedIngredient, repository.Ingredients[0])
+		assert.Equal(t, expectedIngredient, repo.Ingredients[0])
 
-		assert.Empty(t, w.Body)
+		assert.Empty(t, resp.Body)
 	})
 }
