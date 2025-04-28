@@ -33,6 +33,7 @@ func TestIngredientStorageController_Add(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to add ingredient: %v", err)
 		}
+		defer resp.Body.Close()
 
 		assert.Equal(t, http.StatusCreated, resp.StatusCode)
 		assert.Len(t, repo.Ingredients, 1, "repository should contain exactly one ingredient")
@@ -114,5 +115,34 @@ func TestIngredientStorageController_Update(t *testing.T) {
 		assert.Equal(t, "Salt", updatedIngredient.Name)
 		assert.Equal(t, "unit", updatedIngredient.MeasureType)
 		assert.Equal(t, 5, updatedIngredient.Quantity)
+	})
+}
+
+func TestIngredientStorageController_Delete(t *testing.T) {
+	t.Run("should delete an ingredient by Id", func(t *testing.T) {
+		repository := in_memory_repository.NewIngredientStorageManager()
+
+		svc := service.NewService(&repository)
+		ctrl := controller.NewIngredientController(svc)
+
+		server := httptest.NewServer(ctrl)
+		req, err := http.NewRequest(
+			http.MethodDelete,
+			server.URL+"/ingredient?id=1",
+			strings.NewReader(`{}`),
+		)
+		if err != nil {
+			t.Fatalf("failed to create request: %v", err)
+		}
+		req.Header.Set("Content-Type", "application/json")
+
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			t.Fatalf("failed to send request: %v", err)
+		}
+		defer resp.Body.Close()
+
+		assert.Equal(t, http.StatusNoContent, resp.StatusCode)
+
 	})
 }

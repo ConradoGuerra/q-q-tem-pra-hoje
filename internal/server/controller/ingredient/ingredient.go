@@ -38,6 +38,8 @@ func (ic *IngredientController) ServeHTTP(w http.ResponseWriter, r *http.Request
 		ic.GetAll(w, r)
 	case http.MethodPatch:
 		ic.Update(w, r)
+	case http.MethodDelete:
+		ic.Delete(w, r)
 	default:
 		ic.respondWithError(w, http.StatusMethodNotAllowed, ErrMethodNotAllowed)
 	}
