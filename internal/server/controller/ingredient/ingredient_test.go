@@ -57,6 +57,7 @@ func TestIngredientController_ServeHTTP(t *testing.T) {
 	testCases := []struct {
 		name           string
 		method         string
+		urlPath        string
 		expectedStatus int
 		expectedBody   string
 	}{
@@ -79,8 +80,15 @@ func TestIngredientController_ServeHTTP(t *testing.T) {
 			expectedBody:   "",
 		},
 		{
-			name:           "Method not allowed",
+			name:           "Method DELETE",
 			method:         http.MethodDelete,
+			urlPath:        "?id=42",
+			expectedStatus: http.StatusNoContent,
+			expectedBody:   "",
+		},
+		{
+			name:           "Method not allowed",
+			method:         http.MethodPut,
 			expectedStatus: http.StatusMethodNotAllowed,
 			expectedBody:   `{"message":"method not allowed"}`,
 		},
@@ -91,7 +99,7 @@ func TestIngredientController_ServeHTTP(t *testing.T) {
 			mockService := &MockIngredientService{}
 			ctrl := controller.NewIngredientController(mockService)
 
-			req := httptest.NewRequest(tc.method, "/ingredient", bytes.NewBufferString(`{"name":"Salt","measure_type":"unit","quantity":1}`))
+			req := httptest.NewRequest(tc.method, "/ingredient"+tc.urlPath, bytes.NewBufferString(`{"name":"Salt","measureType":"unit","quantity":1}`))
 			req.Header.Set("Content-Type", "application/json")
 			w := httptest.NewRecorder()
 
@@ -122,7 +130,7 @@ func TestIngredientController_Add(t *testing.T) {
 	}{
 		{
 			name:        "Valid ingredient",
-			requestBody: `{"name":"Salt","measure_type":"unit","quantity":1}`,
+			requestBody: `{"name":"Salt","measureType":"unit","quantity":1}`,
 			mockAddFunc: func(ing ingredient.Ingredient) error {
 				return nil
 			},
@@ -141,13 +149,13 @@ func TestIngredientController_Add(t *testing.T) {
 		},
 		{
 			name:           "Empty required fields",
-			requestBody:    `{"name":"","measure_type":"","quantity":1}`,
+			requestBody:    `{"name":"","measureType":"","quantity":1}`,
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   `{"message":"invalid request body"}`,
 		},
 		{
 			name:        "Service error",
-			requestBody: `{"name":"Salt","measure_type":"unit","quantity":1}`,
+			requestBody: `{"name":"Salt","measureType":"unit","quantity":1}`,
 			mockAddFunc: func(ing ingredient.Ingredient) error {
 				return errors.New("service error")
 			},
@@ -254,7 +262,7 @@ func TestIngredientController_Update(t *testing.T) {
 	}{
 		{
 			name:        "Valid update",
-			requestBody: `{"name":"Salt","measure_type":"unit","quantity":3}`,
+			requestBody: `{"name":"Salt","measureType":"unit","quantity":3}`,
 			mockUpdateFunc: func(ing ingredient.Ingredient) error {
 				return nil
 			},
@@ -273,13 +281,13 @@ func TestIngredientController_Update(t *testing.T) {
 		},
 		{
 			name:           "Empty required fields",
-			requestBody:    `{"name":"","measure_type":"","quantity":1}`,
+			requestBody:    `{"name":"","measureType":"","quantity":1}`,
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   `{"message":"invalid request body"}`,
 		},
 		{
 			name:        "Service error",
-			requestBody: `{"name":"Salt","measure_type":"unit","quantity":1}`,
+			requestBody: `{"name":"Salt","measureType":"unit","quantity":1}`,
 			mockUpdateFunc: func(ing ingredient.Ingredient) error {
 				return errors.New("service error")
 			},

@@ -19,7 +19,7 @@ import (
 func TestIngredientStorageController_Add(t *testing.T) {
 	t.Run("should call the service properly", func(t *testing.T) {
 
-		body := `{"name":"Salt","measure_type":"unit","quantity":1}`
+		body := `{"name":"Salt","measureType":"unit","quantity":1}`
 
 		repo := in_memory_repository.NewIngredientStorageManager()
 
@@ -92,7 +92,7 @@ func TestIngredientStorageController_Update(t *testing.T) {
 		ctrl := controller.NewIngredientController(svc)
 
 		server := httptest.NewServer(ctrl)
-		updatedData := `{"name": "Salt", "measure_type": "unit", "quantity": 5}`
+		updatedData := `{"name": "Salt", "measureType": "unit", "quantity": 5}`
 		req, err := http.NewRequest(
 			http.MethodPatch,
 			server.URL+"/ingredient/1",

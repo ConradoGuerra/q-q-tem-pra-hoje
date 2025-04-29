@@ -47,7 +47,7 @@ func (ic *IngredientController) ServeHTTP(w http.ResponseWriter, r *http.Request
 
 type IngredientInput struct {
 	Name        string `json:"name"`
-	MeasureType string `json:"measure_type"`
+	MeasureType string `json:"measureType"`
 	Quantity    int    `json:"quantity"`
 }
 
