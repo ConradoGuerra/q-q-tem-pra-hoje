@@ -21,7 +21,7 @@ func corsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, OPTIONS")
 
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 
@@ -49,6 +49,7 @@ func NewServer() (*Server, error) {
 
 	mux := http.NewServeMux()
 	mux.Handle("/ingredient", ic)
+	mux.Handle("/ingredient/{id}", ic)
 	mux.Handle("/recipe", rc)
 
 	handler := corsMiddleware(mux)

@@ -303,7 +303,7 @@ func TestIngredientController_Update(t *testing.T) {
 			}
 			ctrl := controller.NewIngredientController(mockService)
 
-			req := httptest.NewRequest(http.MethodPatch, "/ingredient", bytes.NewBufferString(tc.requestBody))
+			req := httptest.NewRequest(http.MethodPatch, "/ingredient/1", bytes.NewBufferString(tc.requestBody))
 			req.Header.Set("Content-Type", "application/json")
 			w := httptest.NewRecorder()
 

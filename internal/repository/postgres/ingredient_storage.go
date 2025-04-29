@@ -44,7 +44,7 @@ func (ism *ingredientStorageManager) AddIngredient(ingredientParams ingredient.I
 }
 
 func (ism *ingredientStorageManager) FindIngredients() ([]ingredient.Ingredient, error) {
-	query := "SELECT name, measure_type, quantity FROM ingredients_storage;"
+	query := "SELECT id, name, measure_type, quantity FROM ingredients_storage;"
 	rows, err := ism.db.Query(query)
 
 	if err != nil {
@@ -57,7 +57,7 @@ func (ism *ingredientStorageManager) FindIngredients() ([]ingredient.Ingredient,
 	for rows.Next() {
 		var ingredient ingredient.Ingredient
 
-		err := rows.Scan(&ingredient.Name, &ingredient.MeasureType, &ingredient.Quantity)
+		err := rows.Scan(&ingredient.ID, &ingredient.Name, &ingredient.MeasureType, &ingredient.Quantity)
 
 		if err != nil {
 			return nil, fmt.Errorf("error scanning row: %v", err)
