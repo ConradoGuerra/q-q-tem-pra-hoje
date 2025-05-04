@@ -3,6 +3,8 @@ package integration_test
 import (
 	"bytes"
 	"encoding/json"
+	"io"
+	"net/http"
 	"net/http/httptest"
 	"q-q-tem-pra-hoje/internal/domain/ingredient"
 	"q-q-tem-pra-hoje/internal/domain/recipe"
@@ -43,6 +45,55 @@ func TestRecipeController_Add(t *testing.T) {
 		}
 
 		assert.Equal(t, []recipe.Recipe{expectedRecipes}, repository.Recipes)
+
+	})
+}
+
+func TestRecipeController_Get(t *testing.T) {
+	t.Run("should get the recipes", func(t *testing.T) {
+
+		expectedRecipes := []recipe.Recipe{
+			{Name: "Rice with Onion and Garlic", Ingredients: []ingredient.Ingredient{
+				{Name: "Onion", MeasureType: "unit", Quantity: 1},
+				{Name: "Rice", MeasureType: "mg", Quantity: 500},
+				{Name: "Garlic", MeasureType: "unit", Quantity: 2},
+			}},
+			{Name: "Rice with Garlic", Ingredients: []ingredient.Ingredient{
+				{Name: "Rice", MeasureType: "mg", Quantity: 500},
+				{Name: "Garlic", MeasureType: "unit", Quantity: 2},
+			}},
+			{Name: "Rice with Onion", Ingredients: []ingredient.Ingredient{
+				{Name: "Onion", MeasureType: "unit", Quantity: 1},
+				{Name: "Rice", MeasureType: "mg", Quantity: 500},
+			}},
+			{Name: "Fries", Ingredients: []ingredient.Ingredient{
+				{Name: "Potato", MeasureType: "unit", Quantity: 2},
+			}},
+		}
+		repository := in_memory_repository.NewRecipeManager(expectedRecipes)
+		service := recipeService.NewRecipeService(repository)
+		controller := controller.RecipeController{RecipeProvider: service}
+		server := httptest.NewServer(controller)
+		defer server.Close()
+
+		resp, err := http.Get(server.URL + "/recipes")
+
+		if err != nil {
+			t.Fatalf("failed to find a recipe: %v", err)
+		}
+
+		defer resp.Body.Close()
+
+		body, err := io.ReadAll(resp.Body)
+
+		if err != nil {
+			t.Fatalf("failed to read response body: %v", err)
+		}
+
+		var resultRecipes []recipe.Recipe
+		err = json.Unmarshal(body, &resultRecipes)
+		assert.Equal(t, expectedRecipes, resultRecipes)
+		assert.Equal(t, resp.StatusCode, http.StatusOK)
 
 	})
 }

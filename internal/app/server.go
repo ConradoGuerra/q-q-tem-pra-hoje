@@ -51,6 +51,7 @@ func NewServer() (*Server, error) {
 	mux.Handle("/ingredient", ic)
 	mux.Handle("/ingredient/{id}", ic)
 	mux.Handle("/recipe", rc)
+	mux.HandleFunc("/recommendation", rc.GetRecommendation)
 
 	handler := corsMiddleware(mux)
 

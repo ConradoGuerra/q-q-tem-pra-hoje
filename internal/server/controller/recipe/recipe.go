@@ -23,7 +23,7 @@ func (rc RecipeController) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if r.Method == "GET" {
-		rc.GetRecommendation(w, r)
+		rc.GetRecipes(w, r)
 		return
 	}
 	w.Header().Add("Content-Type", "application/json")
@@ -68,7 +68,7 @@ func (rc RecipeController) GetRecipes(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 
 		w.Header().Add("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]string{"message": "No recipes have been created"})
+		json.NewEncoder(w).Encode(map[string]string{"message": "No recipes have been found"})
 		return
 	}
 
