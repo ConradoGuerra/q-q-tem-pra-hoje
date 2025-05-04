@@ -199,7 +199,9 @@ func TestRecipeController_GetRecommendation(t *testing.T) {
 	recipeService := recipeService.NewRecipeService(recipeRepository)
 	ingredientService := ingredientService.NewService(&ingredientRepository)
 	controller := controller.RecipeController{RecipeProvider: recipeService, IngredientProvider: ingredientService}
-	ts := httptest.NewServer(controller)
+	mux := http.NewServeMux()
+	mux.HandleFunc("/recommendation", controller.GetRecommendation)
+	ts := httptest.NewServer(mux)
 
 	defer ts.Close()
 
@@ -224,7 +226,7 @@ func TestRecipeController_GetRecommendation(t *testing.T) {
 			}},
 		}
 
-		resp, err := http.Get(ts.URL + "/recipe")
+		resp, err := http.Get(ts.URL + "/recommendation")
 		if err != nil {
 			t.Fatalf("Failed to get recommendations: %v", err)
 		}
@@ -240,7 +242,6 @@ func TestRecipeController_GetRecommendation(t *testing.T) {
 			{Recommendation: 4, Recipe: recipes[3]},
 		}
 
-		// expectedRecommendationsJSON, err := json.Marshal(expectedRecommendations)
 		if err != nil {
 			t.Fatalf("error while encoding expectedRecommendationsJSON: %v", err)
 		}
