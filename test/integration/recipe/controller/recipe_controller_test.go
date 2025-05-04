@@ -129,10 +129,18 @@ func TestRecipeController_GetRecommendation(t *testing.T) {
 		ingredientService.Add(ingredient.Ingredient{Name: "Onion", Quantity: 1, MeasureType: "unit"})
 		ingredientService.Add(ingredient.Ingredient{Name: "Rice", Quantity: 500, MeasureType: "mg"})
 
-		r := httptest.NewRequest("POST", "/recommendations", bytes.NewBufferString(`{}`))
-		w := httptest.NewRecorder()
+		// Setup ServeMux and register routes
+		mux := http.NewServeMux()
+		mux.HandleFunc("/recommendation", controller.GetRecommendation)
+		server := httptest.NewServer(mux)
 
-		controller.GetRecommendation(w, r)
+		defer server.Close()
+
+		resp, err := http.Get(server.URL + "/recommendation")
+		if err != nil {
+			t.Fatalf("failed to get recommendations %v", err)
+		}
+		defer resp.Body.Close()
 
 		expectedRecommendations := []recipe.Recommendation{
 			{Recommendation: 1, Recipe: recipes[2]},
@@ -141,11 +149,19 @@ func TestRecipeController_GetRecommendation(t *testing.T) {
 			{Recommendation: 4, Recipe: recipes[3]},
 		}
 
-		expectedRecommendationsJSON, err := json.Marshal(expectedRecommendations)
+		body, err := io.ReadAll(resp.Body)
+
 		if err != nil {
-			t.Fatalf("error while encoding expectedRecommendationsJSON: %v", err)
+			t.Fatalf("failed to read response body: %v", err)
 		}
-		assert.JSONEq(t, string(expectedRecommendationsJSON), w.Body.String())
+
+		var result []recipe.Recommendation
+		err = json.Unmarshal(body, &result)
+		if err != nil {
+			t.Fatalf("failed to unmarshal: %v", err)
+		}
+		assert.Equal(t, expectedRecommendations, result)
+		assert.Equal(t, resp.StatusCode, http.StatusOK)
 
 	})
 }
