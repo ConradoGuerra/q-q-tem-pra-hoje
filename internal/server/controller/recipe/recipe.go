@@ -62,6 +62,23 @@ func (rc RecipeController) Add(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func (rc RecipeController) GetRecipes(w http.ResponseWriter, r *http.Request) {
+
+	recipes, err := rc.RecipeProvider.FindRecipes()
+	if err != nil {
+
+		w.Header().Add("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]string{"message": "No recipes have been created"})
+		return
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&recipes); err != nil {
+		w.Header().Add("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(&recipes)
+		return
+	}
+}
 func (rc RecipeController) GetRecommendation(w http.ResponseWriter, r *http.Request) {
 
 	ingredients, err := rc.IngredientProvider.FindIngredients()

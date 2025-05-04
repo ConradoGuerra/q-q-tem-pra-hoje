@@ -18,6 +18,7 @@ type MockedRecipeService struct {
 	err                func() error
 	recommendations    []recipe.Recommendation
 	hasRecommendations bool
+	recipes            []recipe.Recipe
 }
 
 func (mrs *MockedRecipeService) Create(rec recipe.Recipe) error {
@@ -25,6 +26,9 @@ func (mrs *MockedRecipeService) Create(rec recipe.Recipe) error {
 		return err
 	}
 	return nil
+}
+func (mrs *MockedRecipeService) FindRecipes() ([]recipe.Recipe, error) {
+	return mrs.recipes, nil
 }
 
 func (mrs *MockedRecipeService) GetRecommendations(ingredient *[]ingredient.Ingredient) ([]recipe.Recommendation, error) {
@@ -124,6 +128,79 @@ func TestRecipeController_Add(t *testing.T) {
 			assert.Equal(t, "application/json", w.Header().Get("Content-Type"))
 		})
 	}
+
+}
+
+func TestRecipeController_GetRecipes(t *testing.T) {
+	t.Run("should return all recipes", func(t *testing.T) {
+		expectedRecipes := []recipe.Recipe{
+			{Name: "Rice with Onion and Garlic", Ingredients: []ingredient.Ingredient{
+				{Name: "Onion", MeasureType: "unit", Quantity: 1},
+				{Name: "Rice", MeasureType: "mg", Quantity: 500},
+				{Name: "Garlic", MeasureType: "unit", Quantity: 2},
+			}},
+			{Name: "Rice with Garlic", Ingredients: []ingredient.Ingredient{
+				{Name: "Rice", MeasureType: "mg", Quantity: 500},
+				{Name: "Garlic", MeasureType: "unit", Quantity: 2},
+			}},
+			{Name: "Rice with Onion", Ingredients: []ingredient.Ingredient{
+				{Name: "Onion", MeasureType: "unit", Quantity: 1},
+				{Name: "Rice", MeasureType: "mg", Quantity: 500},
+			}},
+			{Name: "Fries", Ingredients: []ingredient.Ingredient{
+				{Name: "Potato", MeasureType: "unit", Quantity: 2},
+			}},
+		}
+		recipeService := MockedRecipeService{recipes: expectedRecipes}
+		controller := controller.RecipeController{RecipeProvider: &recipeService}
+
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest("GET", "/recipes", bytes.NewBufferString("{}"))
+		controller.GetRecipes(w, r)
+
+		recipeJSON, err := json.Marshal(expectedRecipes)
+
+		if err != nil {
+			t.Errorf("fail to Marshal expectedRecipe %v", err)
+		}
+
+		assert.Equal(t, http.StatusOK, w.Code)
+		assert.JSONEq(t, string(recipeJSON), w.Body.String())
+
+	})
+
+	t.Run("should return a message", func(t *testing.T) {
+		recommendations := []recipe.Recommendation{}
+		recipeService := MockedRecipeService{recommendations: recommendations, hasRecommendations: false}
+		ingredientService := MockerIngredientStorageService{findIngredientsCalled: false, hasIngedients: true}
+		controller := controller.RecipeController{RecipeProvider: &recipeService, IngredientProvider: &ingredientService}
+
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest("GET", "/recommendations", bytes.NewBufferString("{}"))
+		controller.GetRecommendation(w, r)
+
+		assert.True(t, ingredientService.findIngredientsCalled)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+		assert.JSONEq(t, `{"message": "No recommendations have been created"}`, w.Body.String())
+
+	})
+
+	t.Run("should return ingredients not found", func(t *testing.T) {
+		recommendations := []recipe.Recommendation{}
+		recipeService := MockedRecipeService{recommendations: recommendations}
+		ingredientService := MockerIngredientStorageService{findIngredientsCalled: false, hasIngedients: false}
+		controller := controller.RecipeController{RecipeProvider: &recipeService, IngredientProvider: &ingredientService}
+
+		w := httptest.NewRecorder()
+		r := httptest.NewRequest("GET", "/recommendations", bytes.NewBufferString("{}"))
+		controller.GetRecommendation(w, r)
+
+		assert.True(t, ingredientService.findIngredientsCalled)
+		assert.Equal(t, http.StatusUnprocessableEntity, w.Code)
+		assert.JSONEq(t, `{"message": "No ingredients found"}`, w.Body.String())
+
+	})
 
 }
 
