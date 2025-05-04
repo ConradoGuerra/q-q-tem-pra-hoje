@@ -54,6 +54,37 @@ func TestRecipeService_Add(t *testing.T) {
 
 }
 
+func TestRecipesService_FindRecipes(t *testing.T) {
+	t.Run("it should find all recipes", func(t *testing.T) {
+
+		expectedRecipes := []recipe.Recipe{
+			{Name: "Rice with Onion and Garlic", Ingredients: []ingredient.Ingredient{
+				{Name: "Onion", MeasureType: "unit", Quantity: 1},
+				{Name: "Rice", MeasureType: "mg", Quantity: 500},
+				{Name: "Garlic", MeasureType: "unit", Quantity: 2},
+			}},
+			{Name: "Rice with Garlic", Ingredients: []ingredient.Ingredient{
+				{Name: "Rice", MeasureType: "mg", Quantity: 500},
+				{Name: "Garlic", MeasureType: "unit", Quantity: 2},
+			}},
+			{Name: "Rice with Onion", Ingredients: []ingredient.Ingredient{
+				{Name: "Onion", MeasureType: "unit", Quantity: 1},
+				{Name: "Rice", MeasureType: "mg", Quantity: 500},
+			}},
+			{Name: "Fries", Ingredients: []ingredient.Ingredient{
+				{Name: "Potato", MeasureType: "unit", Quantity: 2},
+			}},
+		}
+		repository := in_memory_repository.NewRecipeManager(expectedRecipes)
+		service := recipeService.NewRecipeService(repository)
+
+		recipes, err := service.FindRecipes()
+
+		assert.Empty(t, err)
+		assert.Equal(t, expectedRecipes, recipes)
+	})
+}
+
 func TestRecipseService_GetRecommendations(t *testing.T) {
 	t.Run("it should recommend recipes based on quantity of ingredients", func(t *testing.T) {
 		availableIngredients := []ingredient.Ingredient{
