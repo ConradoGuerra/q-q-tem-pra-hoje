@@ -109,15 +109,19 @@ func TestRecipseService_GetRecommendations(t *testing.T) {
 			{Name: "Fries", Ingredients: []ingredient.Ingredient{
 				{Name: "Potato", MeasureType: "unit", Quantity: 2},
 			}},
+			{Name: "Rice", Ingredients: []ingredient.Ingredient{
+				{Name: "Rice", MeasureType: "mg", Quantity: 500},
+			}},
 		}
 		repository := in_memory_repository.NewRecipeManager(recipes)
 		service := recipeService.NewRecipeService(repository)
 
 		expectedRecommendations := []recipe.Recommendation{
 			{Recommendation: 1, Recipe: recipes[2]},
-			{Recommendation: 2, Recipe: recipes[0]},
-			{Recommendation: 3, Recipe: recipes[1]},
-			{Recommendation: 4, Recipe: recipes[3]},
+			{Recommendation: 2, Recipe: recipes[4]},
+			{Recommendation: 3, Recipe: recipes[0]},
+			{Recommendation: 4, Recipe: recipes[1]},
+			{Recommendation: 5, Recipe: recipes[3]},
 		}
 
 		recommendations, err := service.GetRecommendations(&availableIngredients)
