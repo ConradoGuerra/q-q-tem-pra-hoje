@@ -39,20 +39,20 @@ func (rs *RecipeService) GetRecommendations(ingredients *[]ingredient.Ingredient
 
 	type RecommendationScore struct {
 		recipe recipe.Recipe
-		score  int
+		score  float64
 	}
 
 	var scoredRecipes []RecommendationScore
 	for _, recipe := range recipes {
-		total := 0
-		score := 0
+		total := 0.0
+		score := 0.0
 		for _, ing := range recipe.Ingredients {
 			total++
 			if availableIngredientMap[ing.Name] {
 				score++
 			}
 		}
-		recommendationScore := RecommendationScore{recipe, score / total * 100}
+		recommendationScore := RecommendationScore{recipe, score / total*100}
 		scoredRecipes = append(scoredRecipes, recommendationScore)
 	}
 
