@@ -7,31 +7,21 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"q-q-tem-pra-hoje/internal/domain/ingredient"
-	"q-q-tem-pra-hoje/internal/domain/recipe"
-	controller "q-q-tem-pra-hoje/internal/server/controller/recipe"
+	"q-q-tem-pra-hoje/internal/domain/recommendation"
+	controller "q-q-tem-pra-hoje/internal/server/controller/recommendation"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
-type MockedRecipeService struct {
+type MockedRecommendationService struct {
 	err                func() error
-	recommendations    []recipe.Recommendation
+	recommendations    []recommendation.Recommendation
 	hasRecommendations bool
-	recipes            []recipe.Recipe
 }
 
-func (mrs *MockedRecipeService) Create(rec recipe.Recipe) error {
-	if err := mrs.err(); err != nil {
-		return err
-	}
-	return nil
-}
-func (mrs *MockedRecipeService) FindRecipes() ([]recipe.Recipe, error) {
-	return mrs.recipes, nil
-}
 
-func (mrs *MockedRecipeService) GetRecommendations(ingredient *[]ingredient.Ingredient) ([]recipe.Recommendation, error) {
+func (mrs *MockedRecommendationService) GetRecommendations(ingredient *[]ingredient.Ingredient) ([]recommendation.Recommendation, error) {
 	if mrs.hasRecommendations != false {
 		return mrs.recommendations, nil
 	}
@@ -64,34 +54,34 @@ func (miss *MockerIngredientStorageService) Delete(uint) error {
 	return nil
 }
 
-func TestRecipeController_GetRecommendation(t *testing.T) {
+func TestRecommendationController_GetRecommendation(t *testing.T) {
 	t.Run("should return the recommendations", func(t *testing.T) {
-		recommendations := []recipe.Recommendation{}
-		recipeService := MockedRecipeService{recommendations: recommendations, hasRecommendations: true}
+		recommendations := []recommendation.Recommendation{}
+		recommendationService := MockedRecommendationService{recommendations: recommendations, hasRecommendations: true}
 		ingredientService := MockerIngredientStorageService{findIngredientsCalled: false, hasIngedients: true}
-		controller := controller.RecipeController{RecipeProvider: &recipeService, IngredientProvider: &ingredientService}
+		controller := controller.RecommendationController{RecommendationProvider: &recommendationService, IngredientProvider: &ingredientService}
 
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("GET", "/recommendations", bytes.NewBufferString("{}"))
 		controller.GetRecommendation(w, r)
 
-		recipeJSON, err := json.Marshal(recommendations)
+		recommendationJSON, err := json.Marshal(recommendations)
 
 		if err != nil {
-			t.Errorf("fail to Marshal expectedRecipe %v", err)
+			t.Errorf("fail to Marshal expectedrecommendation %v", err)
 		}
 		assert.True(t, ingredientService.findIngredientsCalled)
 
 		assert.Equal(t, http.StatusOK, w.Code)
-		assert.JSONEq(t, string(recipeJSON), w.Body.String())
+		assert.JSONEq(t, string(recommendationJSON), w.Body.String())
 
 	})
 
 	t.Run("should return a message", func(t *testing.T) {
-		recommendations := []recipe.Recommendation{}
-		recipeService := MockedRecipeService{recommendations: recommendations, hasRecommendations: false}
+		recommendations := []recommendation.Recommendation{}
+		recommendationService := MockedRecommendationService{recommendations: recommendations, hasRecommendations: false}
 		ingredientService := MockerIngredientStorageService{findIngredientsCalled: false, hasIngedients: true}
-		controller := controller.RecipeController{RecipeProvider: &recipeService, IngredientProvider: &ingredientService}
+		controller := controller.RecommendationController{RecommendationProvider: &recommendationService, IngredientProvider: &ingredientService}
 
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("GET", "/recommendations", bytes.NewBufferString("{}"))
@@ -105,10 +95,10 @@ func TestRecipeController_GetRecommendation(t *testing.T) {
 	})
 
 	t.Run("should return ingredients not found", func(t *testing.T) {
-		recommendations := []recipe.Recommendation{}
-		recipeService := MockedRecipeService{recommendations: recommendations}
+		recommendations := []recommendation.Recommendation{}
+		recommendationService := MockedRecommendationService{recommendations: recommendations}
 		ingredientService := MockerIngredientStorageService{findIngredientsCalled: false, hasIngedients: false}
-		controller := controller.RecipeController{RecipeProvider: &recipeService, IngredientProvider: &ingredientService}
+		controller := controller.RecommendationController{RecommendationProvider: &recommendationService, IngredientProvider: &ingredientService}
 
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("GET", "/recommendations", bytes.NewBufferString("{}"))

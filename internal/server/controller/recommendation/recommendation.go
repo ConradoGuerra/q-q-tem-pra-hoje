@@ -4,16 +4,16 @@ import (
 	"encoding/json"
 	"net/http"
 	"q-q-tem-pra-hoje/internal/domain/ingredient"
-	"q-q-tem-pra-hoje/internal/domain/recipe"
+	"q-q-tem-pra-hoje/internal/domain/recommendation"
 )
 
 type RecommendationController struct {
 	IngredientProvider ingredient.IngredientStorageProvider
-	RecipeProvider     recipe.RecipeProvider
+  RecommendationProvider recommendation.RecommendationProvider
 }
 
-func NewRecommendationController(isp ingredient.IngredientStorageProvider, rp recipe.RecipeProvider) *RecommendationController {
-	return &RecommendationController{IngredientProvider: isp, RecipeProvider: rp}
+func NewRecommendationController(isp ingredient.IngredientStorageProvider, rp recommendation.RecommendationProvider) *RecommendationController {
+	return &RecommendationController{IngredientProvider: isp, RecommendationProvider: rp}
 }
 
 func (rc RecommendationController) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -29,34 +29,6 @@ func (rc RecommendationController) ServeHTTP(w http.ResponseWriter, r *http.Requ
 	return
 }
 
-func (rc RecommendationController) Add(w http.ResponseWriter, r *http.Request) {
-
-	var recipeDTO struct {
-		Name        string                  `json:"name"`
-		Ingredients []ingredient.Ingredient `json:"ingredients"`
-	}
-
-	if err := json.NewDecoder(r.Body).Decode(&recipeDTO); err != nil {
-		w.Header().Add("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{
-			"message": "Invalid request body",
-		})
-		return
-	}
-	if err := rc.RecipeProvider.Create(recipe.Recipe(recipeDTO)); err != nil {
-		w.Header().Add("Content-Type", "application/json")
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(map[string]string{
-			"message": "Unexpected error",
-		})
-		return
-	}
-	w.Header().Add("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-
-}
-
 func (rc RecommendationController) GetRecommendation(w http.ResponseWriter, r *http.Request) {
 
 	ingredients, err := rc.IngredientProvider.FindIngredients()
@@ -68,7 +40,7 @@ func (rc RecommendationController) GetRecommendation(w http.ResponseWriter, r *h
 
 	}
 
-	recipes, err := rc.RecipeProvider.GetRecommendations(&ingredients)
+	recommendations, err := rc.RecommendationProvider.GetRecommendations(&ingredients)
 	if err != nil {
 
 		w.Header().Add("Content-Type", "application/json")
@@ -76,10 +48,10 @@ func (rc RecommendationController) GetRecommendation(w http.ResponseWriter, r *h
 		return
 	}
 
-	if err := json.NewDecoder(r.Body).Decode(&recipes); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&recommendations); err != nil {
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(&recipes)
+		json.NewEncoder(w).Encode(&recommendations)
 		return
 	}
 }
