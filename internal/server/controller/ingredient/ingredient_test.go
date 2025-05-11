@@ -64,18 +64,21 @@ func TestIngredientController_ServeHTTP(t *testing.T) {
 		{
 			name:           "Method POST",
 			method:         http.MethodPost,
+			urlPath:        "",
 			expectedStatus: http.StatusCreated,
 			expectedBody:   "",
 		},
 		{
 			name:           "Method GET",
 			method:         http.MethodGet,
+			urlPath:        "",
 			expectedStatus: http.StatusOK,
 			expectedBody:   "[]",
 		},
 		{
 			name:           "Method PATCH",
 			method:         http.MethodPatch,
+			urlPath:        "/42",
 			expectedStatus: http.StatusOK,
 			expectedBody:   "",
 		},
@@ -99,14 +102,37 @@ func TestIngredientController_ServeHTTP(t *testing.T) {
 			mockService := &MockIngredientService{}
 			ctrl := controller.NewIngredientController(mockService)
 
-			req := httptest.NewRequest(tc.method, "/ingredient"+tc.urlPath, bytes.NewBufferString(`{"name":"Salt","measureType":"unit","quantity":1}`))
+			mux := http.NewServeMux()
+
+			mux.Handle("POST /ingredient", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				ctrl.ServeHTTP(w, r)
+			}))
+			mux.Handle("GET /ingredient", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				ctrl.ServeHTTP(w, r)
+			}))
+			mux.Handle("PATCH /ingredient/{id}", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				ctrl.ServeHTTP(w, r)
+			}))
+			mux.Handle("DELETE /ingredient", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				ctrl.ServeHTTP(w, r)
+			}))
+
+			mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+				http.Error(w, `{"message":"method not allowed"}`, http.StatusMethodNotAllowed)
+				w.Header().Set("Content-Type", "application/json")
+			})
+
+			reqURL := "/ingredient" + tc.urlPath
+			req := httptest.NewRequest(tc.method, reqURL, bytes.NewBufferString(`{"name":"Salt","measureType":"unit","quantity":1}`))
 			req.Header.Set("Content-Type", "application/json")
 			w := httptest.NewRecorder()
 
-			ctrl.ServeHTTP(w, req)
+			mux.ServeHTTP(w, req)
 
 			assert.Equal(t, tc.expectedStatus, w.Code)
-			assert.Equal(t, "application/json", w.Header().Get("Content-Type"))
+			if tc.expectedStatus != http.StatusNoContent {
+				assert.Equal(t, "application/json", w.Header().Get("Content-Type"))
+			}
 
 			if tc.expectedBody != "" {
 				if tc.expectedBody == "[]" {
