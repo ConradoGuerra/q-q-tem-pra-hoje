@@ -478,7 +478,11 @@
                 <div class="ingredient-input">
                     <input type="text" class="ingName" placeholder="Ingredient name">
                     <input type="number" class="ingQuantity" placeholder="Quantity">
-                    <input type="text" class="ingMeasure" placeholder="Measure Type" />
+                    <select id="ingMeasure">
+                      <option value="unit">Unit</option>
+                      <option value="g">Gram</option>
+                      <option value="mg">Milligram</option>
+                    </select>
                 </div>
             `;
         document.getElementById("recipeIngredients").appendChild(newInput);
@@ -489,11 +493,11 @@
         const ingredients = [];
         const recipeName = document.getElementById("recipeName").value;
 
-        document.querySelectorAll(".ingredient-input").forEach((input) => {
+        document.querySelectorAll(".ingredient-input").forEach((div) => {
           ingredients.push({
-            Name: input.querySelector(".ingName").value,
-            MeasureType: input.querySelector(".ingMeasure").value,
-            Quantity: parseInt(input.querySelector(".ingQuantity").value),
+            Name: div.querySelector(".ingName").value,
+            Quantity: +div.querySelector(".ingQuantity").value,
+            MeasureType: div.querySelector("#ingMeasure").value,
           });
         });
 
@@ -511,7 +515,11 @@
             <div class="ingredient-input">
               <input type="text" class="ingName" placeholder="Ingredient name">
               <input type="number" class="ingQuantity" placeholder="Quantity">
-              <input type="text" class="ingMeasure" placeholder="Measure Type" />
+              <select id="ingMeasure">
+                <option value="unit">Unit</option>
+                <option value="g">Gram</option>
+                <option value="mg">Milligram</option>
+              </select>
             </div>
           </div>
         `;
