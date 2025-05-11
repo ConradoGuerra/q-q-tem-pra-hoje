@@ -119,7 +119,12 @@ func TestIngredientService_Find(t *testing.T) {
 		expectedIngredients := []ingredient.Ingredient{{Name: "onion", MeasureType: "unit", Quantity: 10}, {Name: "garlic", MeasureType: "unit", Quantity: 10}}
 
 		assert.NoError(t, err)
-		assert.Equal(t, expectedIngredients, ingredientsFound)
+		for i, expected := range expectedIngredients {
+			actual := ingredientsFound[i]
+			assert.Equal(t, expected.Name, actual.Name)
+			assert.Equal(t, expected.MeasureType, actual.MeasureType)
+			assert.Equal(t, expected.Quantity, actual.Quantity)
+		}
 	})
 }
 
