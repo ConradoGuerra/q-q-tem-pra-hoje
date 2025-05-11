@@ -329,11 +329,17 @@ func TestIngredientController_Update(t *testing.T) {
 			}
 			ctrl := controller.NewIngredientController(mockService)
 
-			req := httptest.NewRequest(http.MethodPatch, "/ingredient/1", bytes.NewBufferString(tc.requestBody))
+			mux := http.NewServeMux()
+			mux.HandleFunc("PATCH /ingredient/{id}", func(w http.ResponseWriter, r *http.Request) {
+				ctrl.Update(w, r)
+			})
+
+			reqURL := "/ingredient/1"
+			req := httptest.NewRequest(http.MethodPatch, reqURL, bytes.NewBufferString(tc.requestBody))
 			req.Header.Set("Content-Type", "application/json")
 			w := httptest.NewRecorder()
 
-			ctrl.Update(w, req)
+			mux.ServeHTTP(w, req)
 
 			assert.Equal(t, tc.expectedStatus, w.Code)
 			assert.Equal(t, "application/json", w.Header().Get("Content-Type"))
