@@ -79,29 +79,3 @@ func (rc RecipeController) GetRecipes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
-func (rc RecipeController) GetRecommendation(w http.ResponseWriter, r *http.Request) {
-
-	ingredients, err := rc.IngredientProvider.FindIngredients()
-	if err != nil {
-		w.Header().Add("Content-Type", "application/json")
-		w.WriteHeader(http.StatusUnprocessableEntity)
-		json.NewEncoder(w).Encode(map[string]string{"message": "No ingredients found"})
-		return
-
-	}
-
-	recipes, err := rc.RecipeProvider.GetRecommendations(&ingredients)
-	if err != nil {
-
-		w.Header().Add("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]string{"message": "No recommendations have been created"})
-		return
-	}
-
-	if err := json.NewDecoder(r.Body).Decode(&recipes); err != nil {
-		w.Header().Add("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(&recipes)
-		return
-	}
-}

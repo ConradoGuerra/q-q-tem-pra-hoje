@@ -8,8 +8,10 @@ import (
 	"q-q-tem-pra-hoje/internal/repository/postgres"
 	ingredientController "q-q-tem-pra-hoje/internal/server/controller/ingredient"
 	recipeController "q-q-tem-pra-hoje/internal/server/controller/recipe"
+	recommendationController "q-q-tem-pra-hoje/internal/server/controller/recommendation"
 	ingredientService "q-q-tem-pra-hoje/internal/service/ingredient"
 	recipeService "q-q-tem-pra-hoje/internal/service/recipe"
+	recommendationService "q-q-tem-pra-hoje/internal/service/recommendation"
 )
 
 type Server struct {
@@ -44,14 +46,16 @@ func NewServer() (*Server, error) {
 	rm := postgres.NewRecipeManager(db)
 	is := ingredientService.NewService(&ism)
 	rs := recipeService.NewRecipeService(rm)
+	res := recommendationService.NewRecommendationService(rm)
 	ic := ingredientController.NewIngredientController(is)
 	rc := recipeController.NewRecipeController(is, rs)
+	rec := recommendationController.NewRecommendationController(is, res)
 
 	mux := http.NewServeMux()
 	mux.Handle("/ingredient", ic)
 	mux.Handle("/ingredient/{id}", ic)
 	mux.Handle("/recipe", rc)
-	mux.HandleFunc("/recommendation", rc.GetRecommendation)
+	mux.Handle("/recommendation", rec)
 
 	handler := corsMiddleware(mux)
 
