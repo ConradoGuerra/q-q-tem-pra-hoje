@@ -3,39 +3,23 @@ package e2e_test
 import (
 	"bytes"
 	"database/sql"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"os"
+	"q-q-tem-pra-hoje/internal/app"
 	"q-q-tem-pra-hoje/internal/repository/postgres"
 	controller "q-q-tem-pra-hoje/internal/server/controller/recipe"
 	recipeService "q-q-tem-pra-hoje/internal/service/recipe"
+	"q-q-tem-pra-hoje/internal/testutil"
 	"testing"
 
-	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
 
-func setupDatabase(t *testing.T) *sql.DB {
-	err := godotenv.Load("../../../../.env")
-
+func setupDatabase(t *testing.T) (*sql.DB, func()) {
+	dsn, teardown := testutil.SetupTestDB(t)
+	db, err := sql.Open("postgres", dsn)
 	if err != nil {
-		t.Fatalf("error loading .env files: %v", err)
-	}
-
-	dbHost := os.Getenv("DB_HOST")
-	dbPort := os.Getenv("DB_PORT")
-	dbUser := os.Getenv("DB_USER")
-	dbPassword := os.Getenv("DB_PASSWORD")
-	dbName := os.Getenv("DB_NAME")
-
-	connStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		dbHost, dbPort, dbUser, dbPassword, dbName)
-
-	db, err := sql.Open("postgres", connStr)
-
-	if err != nil {
-		t.Fatalf("failed to connect to the database: %v", err)
+		t.Fatal(err)
 	}
 
 	_, err = db.Exec("CREATE TABLE IF NOT EXISTS recipes (id SERIAL PRIMARY KEY, name TEXT NOT NULL UNIQUE);")
@@ -68,25 +52,19 @@ func setupDatabase(t *testing.T) *sql.DB {
 	if err != nil {
 		t.Fatalf("failed to create the ingredients_storage table: %v", err)
 	}
-	return db
+	return db, teardown
 }
 
 func TestRecipeController_Add(t *testing.T) {
-	db := setupDatabase(t)
+	db, teardown := setupDatabase(t)
+	_, err := app.NewServer(db)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	t.Cleanup(func() {
 
-		_, err := db.Exec(`DROP TABLE recipes_ingredients`)
-
-		if err != nil {
-			t.Fatalf("failed to drop table recipes_ingredients: %v", err)
-		}
-
-		_, err = db.Exec(`DROP TABLE recipes`)
-
-		if err != nil {
-			t.Fatalf("failed to drop table recipes: %v", err)
-		}
-
+		teardown()
 		db.Close()
 
 	})

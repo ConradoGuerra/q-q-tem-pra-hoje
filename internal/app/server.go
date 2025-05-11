@@ -2,9 +2,7 @@ package app
 
 import (
 	"database/sql"
-	"fmt"
 	"net/http"
-	"q-q-tem-pra-hoje/internal/database"
 	"q-q-tem-pra-hoje/internal/repository/postgres"
 	ingredientController "q-q-tem-pra-hoje/internal/server/controller/ingredient"
 	recipeController "q-q-tem-pra-hoje/internal/server/controller/recipe"
@@ -16,7 +14,6 @@ import (
 
 type Server struct {
 	server *http.Server
-	db     *sql.DB
 }
 
 func corsMiddleware(next http.Handler) http.Handler {
@@ -36,11 +33,7 @@ func corsMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func NewServer() (*Server, error) {
-	db, err := database.Connect()
-	if err != nil {
-		return nil, fmt.Errorf("failed to connect to the database: %w", err)
-	}
+func NewServer(db *sql.DB) (*Server, error) {
 
 	ism := postgres.NewIngredientStorageManager(db)
 	rm := postgres.NewRecipeManager(db)
@@ -63,15 +56,9 @@ func NewServer() (*Server, error) {
 		server: &http.Server{
 			Addr:    ":8080",
 			Handler: handler,
-		},
-		db: db,
-	}, nil
+		}}, nil
 }
 
 func (s Server) Start() error {
 	return s.server.ListenAndServe()
-}
-
-func (s Server) Close() error {
-	return s.db.Close()
 }

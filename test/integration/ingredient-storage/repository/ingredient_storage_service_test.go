@@ -2,40 +2,23 @@ package integration_test
 
 import (
 	"database/sql"
-	"fmt"
-	"os"
 	"q-q-tem-pra-hoje/internal/domain/ingredient"
 	"q-q-tem-pra-hoje/internal/repository/postgres"
 	ingredientService "q-q-tem-pra-hoje/internal/service/ingredient"
+	"q-q-tem-pra-hoje/internal/testutil"
 	"testing"
 
 	_ "github.com/lib/pq"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/joho/godotenv"
 )
 
-func setupDatabase(t *testing.T) *sql.DB {
-	err := godotenv.Load("../../../../.env")
 
+func TestIngredientService_Add(t *testing.T) {
+	dsn, teardown := testutil.SetupTestDB(t)
+	db, err := sql.Open("postgres", dsn)
 	if err != nil {
-		t.Fatalf("error loading .env file: %v", err)
-	}
-
-	dbHost := os.Getenv("DB_HOST")
-	dbPort := os.Getenv("DB_PORT")
-	dbUser := os.Getenv("DB_USER")
-	dbPassword := os.Getenv("DB_PASSWORD")
-	dbName := os.Getenv("DB_NAME")
-
-	connStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		dbHost, dbPort, dbUser, dbPassword, dbName)
-
-	// Connection with the database
-	db, err := sql.Open("postgres", connStr)
-
-	if err != nil {
-		t.Fatalf("failed to connect to the database: %v", err)
+		t.Fatal(err)
 	}
 
 	_, err = db.Exec(`
@@ -48,28 +31,10 @@ func setupDatabase(t *testing.T) *sql.DB {
     `)
 
 	if err != nil {
-		t.Fatalf("failed to create the ingredients_storage table: %v", err)
+		t.Fatalf("failed to create table ingredients_storage: %v", err)
 	}
 
-	return db
-}
-
-func teardownDatabase(db *sql.DB, t *testing.T) {
-	if _, err := db.Exec("DROP TABLE IF EXISTS ingredients_storage"); err != nil {
-		t.Fatalf("failed to drop table: %v", err)
-	}
-
-	if err := db.Close(); err != nil {
-		t.Fatalf("failed to close db: %v", err)
-	}
-}
-
-func TestIngredientService_Add(t *testing.T) {
-	db := setupDatabase(t)
-
-	t.Cleanup(func() {
-		teardownDatabase(db, t)
-	})
+	defer teardown()
 
 	ingredientManager := postgres.NewIngredientStorageManager(db)
 
@@ -96,15 +61,30 @@ func TestIngredientService_Add(t *testing.T) {
 }
 
 func TestIngredientService_Find(t *testing.T) {
-	db := setupDatabase(t)
+	dsn, teardown := testutil.SetupTestDB(t)
+	db, err := sql.Open("postgres", dsn)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	t.Cleanup(func() {
-		teardownDatabase(db, t)
-	})
+	_, err = db.Exec(`
+        CREATE TABLE IF NOT EXISTS ingredients_storage (
+            id SERIAL PRIMARY KEY,
+            name TEXT NOT NULL,
+            measure_type TEXT NOT NULL,
+            quantity INT NOT NULL
+        );
+    `)
+
+	if err != nil {
+		t.Fatalf("failed to create table ingredients_storage: %v", err)
+	}
+
+	defer teardown()
 
 	query := `INSERT INTO ingredients_storage(name, measure_type, quantity) 
             VALUES ($1, $2, $3), ($4, $5, $6);`
-	_, err := db.Exec(query, "onion", "unit", 10, "garlic", "unit", 10)
+	_, err = db.Exec(query, "onion", "unit", 10, "garlic", "unit", 10)
 
 	if err != nil {
 		t.Fatal(err)
@@ -129,15 +109,30 @@ func TestIngredientService_Find(t *testing.T) {
 }
 
 func TestIngredientService_Update(t *testing.T) {
-	db := setupDatabase(t)
+	dsn, teardown := testutil.SetupTestDB(t)
+	db, err := sql.Open("postgres", dsn)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	t.Cleanup(func() {
-		teardownDatabase(db, t)
-	})
+	_, err = db.Exec(`
+        CREATE TABLE IF NOT EXISTS ingredients_storage (
+            id SERIAL PRIMARY KEY,
+            name TEXT NOT NULL,
+            measure_type TEXT NOT NULL,
+            quantity INT NOT NULL
+        );
+    `)
+
+	if err != nil {
+		t.Fatalf("failed to create table ingredients_storage: %v", err)
+	}
+
+	defer teardown()
 
 	query := `INSERT INTO ingredients_storage(id, name, measure_type, quantity) 
             VALUES (1, $1, $2, $3), (2, $4, $5, $6);`
-	_, err := db.Exec(query, "onion", "unit", 10, "onion", "unit", 10)
+	_, err = db.Exec(query, "onion", "unit", 10, "onion", "unit", 10)
 
 	if err != nil {
 		t.Fatal(err)
@@ -171,15 +166,30 @@ func TestIngredientService_Update(t *testing.T) {
 }
 
 func TestIngredientService_Delete(t *testing.T) {
-	db := setupDatabase(t)
+	dsn, teardown := testutil.SetupTestDB(t)
+	db, err := sql.Open("postgres", dsn)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	t.Cleanup(func() {
-		teardownDatabase(db, t)
-	})
+	_, err = db.Exec(`
+        CREATE TABLE IF NOT EXISTS ingredients_storage (
+            id SERIAL PRIMARY KEY,
+            name TEXT NOT NULL,
+            measure_type TEXT NOT NULL,
+            quantity INT NOT NULL
+        );
+    `)
+
+	if err != nil {
+		t.Fatalf("failed to create table ingredients_storage: %v", err)
+	}
+
+	defer teardown()
 
 	query := `INSERT INTO ingredients_storage(id, name, measure_type, quantity) 
             VALUES (1, $1, $2, $3), (2, $4, $5, $6);`
-	_, err := db.Exec(query, "onion", "unit", 10, "onion", "unit", 10)
+	_, err = db.Exec(query, "onion", "unit", 10, "onion", "unit", 10)
 
 	if err != nil {
 		t.Fatal(err)

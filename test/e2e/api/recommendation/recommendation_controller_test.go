@@ -3,10 +3,9 @@ package e2e_test
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"os"
+	"q-q-tem-pra-hoje/internal/app"
 	"q-q-tem-pra-hoje/internal/domain/ingredient"
 	"q-q-tem-pra-hoje/internal/domain/recipe"
 	"q-q-tem-pra-hoje/internal/domain/recommendation"
@@ -14,33 +13,18 @@ import (
 	controller "q-q-tem-pra-hoje/internal/server/controller/recommendation"
 	ingredientService "q-q-tem-pra-hoje/internal/service/ingredient"
 	recommendationService "q-q-tem-pra-hoje/internal/service/recommendation"
+	"q-q-tem-pra-hoje/internal/testutil"
 	"testing"
 
-	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"github.com/stretchr/testify/assert"
 )
 
-func setupDatabase(t *testing.T) *sql.DB {
-	err := godotenv.Load("../../../../.env")
-
+func setupDatabase(t *testing.T) (*sql.DB, func()) {
+	dsn, teardown := testutil.SetupTestDB(t)
+	db, err := sql.Open("postgres", dsn)
 	if err != nil {
-		t.Fatalf("error loading .env files: %v", err)
-	}
-
-	dbHost := os.Getenv("DB_HOST")
-	dbPort := os.Getenv("DB_PORT")
-	dbUser := os.Getenv("DB_USER")
-	dbPassword := os.Getenv("DB_PASSWORD")
-	dbName := os.Getenv("DB_NAME")
-
-	connStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		dbHost, dbPort, dbUser, dbPassword, dbName)
-
-	db, err := sql.Open("postgres", connStr)
-
-	if err != nil {
-		t.Fatalf("failed to connect to the database: %v", err)
+		t.Fatal(err)
 	}
 
 	_, err = db.Exec("CREATE TABLE IF NOT EXISTS recipes (id SERIAL PRIMARY KEY, name TEXT NOT NULL UNIQUE);")
@@ -73,39 +57,26 @@ func setupDatabase(t *testing.T) *sql.DB {
 	if err != nil {
 		t.Fatalf("failed to create the ingredients_storage table: %v", err)
 	}
-	return db
+	return db, teardown
 }
 
-
 func TestRecommendationController_GetRecommendation(t *testing.T) {
-	db := setupDatabase(t)
+	db, teardown := setupDatabase(t)
+	_, err := app.NewServer(db)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	t.Cleanup(func() {
 
-		_, err := db.Exec(`DROP TABLE ingredients_storage`)
-
-		if err != nil {
-			t.Fatalf("failed to drop table ingredients_storage: %v", err)
-		}
-
-		_, err = db.Exec(`DROP TABLE recipes_ingredients`)
-
-		if err != nil {
-			t.Fatalf("failed to drop table recipes_ingredients: %v", err)
-		}
-
-		_, err = db.Exec(`DROP TABLE recipes`)
-
-		if err != nil {
-			t.Fatalf("failed to drop table recipes: %v", err)
-		}
-
+		teardown()
 		db.Close()
 
 	})
 
 	query := `INSERT INTO ingredients_storage(name, measure_type, quantity)
             VALUES ($1, $2, $3), ($4, $5, $6);`
-	_, err := db.Exec(query, "Onion", "unit", 1, "Rice", "mg", 500)
+	_, err = db.Exec(query, "Onion", "unit", 1, "Rice", "mg", 500)
 
 	if err != nil {
 		t.Fatal(err)
@@ -151,9 +122,9 @@ func TestRecommendationController_GetRecommendation(t *testing.T) {
 
 	recipeRepository := postgres.NewRecipeManager(db)
 	ingredientRepository := postgres.NewIngredientStorageManager(db)
-	recommendationService :=recommendationService.NewRecommendationService(recipeRepository)
+	recommendationService := recommendationService.NewRecommendationService(recipeRepository)
 	ingredientService := ingredientService.NewService(&ingredientRepository)
-	controller := controller.RecommendationController{RecommendationProvider:recommendationService, IngredientProvider: ingredientService}
+	controller := controller.RecommendationController{RecommendationProvider: recommendationService, IngredientProvider: ingredientService}
 	mux := http.NewServeMux()
 	mux.HandleFunc("/recommendation", controller.GetRecommendation)
 	ts := httptest.NewServer(mux)

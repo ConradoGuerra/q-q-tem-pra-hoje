@@ -2,46 +2,28 @@ package integration_test
 
 import (
 	"database/sql"
-	"fmt"
-	"os"
 	"q-q-tem-pra-hoje/internal/domain/ingredient"
 	"q-q-tem-pra-hoje/internal/domain/recipe"
 	"q-q-tem-pra-hoje/internal/repository/postgres"
 	recipeService "q-q-tem-pra-hoje/internal/service/recipe"
+	"q-q-tem-pra-hoje/internal/testutil"
 	"testing"
 
-	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"github.com/stretchr/testify/assert"
 )
 
-func setupDatabase(t *testing.T) *sql.DB {
-	err := godotenv.Load("../../../../.env")
-
+func TestAddRecipe(t *testing.T) {
+	dsn, teardown := testutil.SetupTestDB(t)
+	db, err := sql.Open("postgres", dsn)
 	if err != nil {
-		t.Fatalf("error loading .env files: %v", err)
-	}
-
-	dbHost := os.Getenv("DB_HOST")
-	dbPort := os.Getenv("DB_PORT")
-	dbUser := os.Getenv("DB_USER")
-	dbPassword := os.Getenv("DB_PASSWORD")
-	dbName := os.Getenv("DB_NAME")
-
-	connStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		dbHost, dbPort, dbUser, dbPassword, dbName)
-
-	db, err := sql.Open("postgres", connStr)
-
-	if err != nil {
-		t.Fatalf("failed to connect to the database: %v", err)
+		t.Fatal(err)
 	}
 
 	_, err = db.Exec("CREATE TABLE IF NOT EXISTS recipes (id SERIAL PRIMARY KEY, name TEXT NOT NULL UNIQUE);")
 	if err != nil {
 		t.Fatalf("failed to create table recipes: %v", err)
 	}
-
 	_, err = db.Exec(`
     CREATE TABLE IF NOT EXISTS recipes_ingredients (
         recipe_id INT NOT NULL REFERENCES recipes(id) ON DELETE CASCADE,
@@ -55,32 +37,7 @@ func setupDatabase(t *testing.T) *sql.DB {
 		t.Fatalf("failed to create table recipes_ingredients: %v", err)
 	}
 
-	return db
-}
-
-func teardownDatabase(db *sql.DB, t *testing.T) {
-	_, err := db.Exec(`DROP TABLE recipes_ingredients`)
-
-	if err != nil {
-		t.Fatalf("failed to drop table recipes_ingredients: %v", err)
-	}
-
-	_, err = db.Exec(`DROP TABLE recipes`)
-
-	if err != nil {
-		t.Fatalf("failed to drop table recipes: %v", err)
-	}
-
-	db.Close()
-}
-
-func TestAddRecipe(t *testing.T) {
-	db := setupDatabase(t)
-
-	t.Cleanup(func() {
-		teardownDatabase(db, t)
-	})
-
+	defer teardown()
 	recipeManager := postgres.NewRecipeManager(db)
 
 	service := recipeService.NewRecipeService(recipeManager)
@@ -136,4 +93,3 @@ func TestAddRecipe(t *testing.T) {
 		assert.Contains(t, err.Error(), "failed to insert recipe: pq: duplicate key value violates unique constraint")
 	})
 }
-
