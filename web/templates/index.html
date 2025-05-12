@@ -320,6 +320,7 @@
           + Add Ingredient
         </button>
         <button onclick="createRecipe()">Create Recipe</button>
+        <div id="recipes" class="recipe-recommendations"></div>
       </div>
 
       <!-- Recommendations Section -->
@@ -524,7 +525,29 @@
           </div>
         `;
 
+        await getRecipes();
         hideLoading();
+      }
+
+      async function getRecipes() {
+        const response = await fetch("http://localhost:8080/recipe");
+        const recipes = await response.json();
+
+        const container = document.getElementById("recipes");
+
+        container.innerHTML = recipes
+          .map(
+            (recipe) => `<div class="recipe-card">
+                    <h3>${recipe.Name}</h3>
+                    <div>Requires:</div>
+                    ${recipe.Ingredients.map(
+                      (ing) =>
+                        `<div class="ingredient-badge">${ing.Name}: ${ing.Quantity} ${ing.MeasureType}</div>`,
+                    ).join("")}
+                </div>
+            `,
+          )
+          .join("");
       }
 
       async function getRecommendations() {
@@ -552,6 +575,7 @@
       }
 
       getIngredients();
+      getRecipes();
     </script>
   </body>
 </html>
