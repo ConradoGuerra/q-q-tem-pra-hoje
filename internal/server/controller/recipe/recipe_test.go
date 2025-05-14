@@ -15,9 +15,10 @@ import (
 )
 
 type MockedRecipeService struct {
-	err                func() error
-	hasRecommendations bool
-	recipes            []recipe.Recipe
+	err                  func() error
+	hasRecommendations   bool
+	recipes              []recipe.Recipe
+	mockedDeleteFunction error
 }
 
 func (mrs *MockedRecipeService) Create(rec recipe.Recipe) error {
@@ -28,6 +29,10 @@ func (mrs *MockedRecipeService) Create(rec recipe.Recipe) error {
 }
 func (mrs *MockedRecipeService) FindRecipes() ([]recipe.Recipe, error) {
 	return mrs.recipes, nil
+}
+
+func (mrs *MockedRecipeService) Delete(uint) error {
+	return mrs.mockedDeleteFunction
 }
 
 type MockerIngredientStorageService struct {
@@ -49,10 +54,6 @@ func (miss *MockerIngredientStorageService) FindIngredients() ([]ingredient.Ingr
 }
 
 func (miss *MockerIngredientStorageService) Update(ingredient.Ingredient) error {
-	return nil
-}
-
-func (miss *MockerIngredientStorageService) Delete(uint) error {
 	return nil
 }
 
@@ -161,4 +162,58 @@ func TestRecipeController_GetRecipes(t *testing.T) {
 
 	})
 
+}
+
+func TestRecipeController_Delete(t *testing.T) {
+	testCases := []struct {
+		name           string
+		urlPath        string
+		returnValue    error
+		expectedStatus int
+		expectedBody   string
+	}{
+		{
+			name:           "Successful deletion",
+			urlPath:        "/ingredient?id=42",
+			expectedStatus: http.StatusNoContent,
+		},
+		{
+			name:           "Missing ID parameter",
+			urlPath:        "/recipe",
+			expectedStatus: http.StatusBadRequest,
+			expectedBody:   `{"message":"invalid id parameter"}`,
+		},
+		{
+			name:           "Invalid ID format",
+			urlPath:        "/recipe?id=abc",
+			expectedStatus: http.StatusBadRequest,
+			expectedBody:   `{"message":"invalid id parameter"}`,
+		},
+		{
+			name:           "Service error",
+			urlPath:        "/recipe?id=42",
+			returnValue:    errors.New("service error"),
+			expectedStatus: http.StatusInternalServerError,
+			expectedBody:   `{"message":"failed to delete recipe"}`,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			recipeService := MockedRecipeService{mockedDeleteFunction: tc.returnValue}
+			controller := controller.RecipeController{RecipeProvider: &recipeService}
+
+			req := httptest.NewRequest(http.MethodDelete, tc.urlPath, nil)
+			w := httptest.NewRecorder()
+
+			controller.Delete(w, req)
+
+			assert.Equal(t, tc.expectedStatus, w.Code)
+			assert.Equal(t, "application/json", w.Header().Get("Content-Type"))
+
+			if tc.expectedBody != "" {
+				assert.JSONEq(t, tc.expectedBody, w.Body.String())
+			}
+
+		})
+	}
 }

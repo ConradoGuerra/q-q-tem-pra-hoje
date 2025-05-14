@@ -251,7 +251,7 @@ func TestRecipeService_DeleteRecipe(t *testing.T) {
 		}
 		assert.NotEmpty(t, recipes)
 
-		err = service.DeleteRecipe(id_1)
+		err = service.DeleteRecipe(uint(id_1))
 		assert.NoError(t, err)
 
 		recipes, err = service.GetAllRecipes()

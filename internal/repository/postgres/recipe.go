@@ -83,7 +83,7 @@ func (rm recipeManager) GetAllRecipes() ([]recipe.Recipe, error) {
 	return recipesRetrieved, nil
 }
 
-func (rm recipeManager) DeleteRecipe(id int) error {
+func (rm recipeManager) DeleteRecipe(id uint) error {
 	_, err := rm.Exec(`
 		DELETE FROM recipes_ingredients 
 		WHERE recipe_id IN (SELECT id FROM recipes WHERE id = $1)

@@ -34,7 +34,7 @@ func TestRecipeController_Add(t *testing.T) {
 
 		controller.Add(w, r)
 
-		expectedRecipes, err := recipe.NewRecipe(1, "Rice", []ingredient.Ingredient{
+		expectedRecipes, err := recipe.NewRecipe(0, "Rice", []ingredient.Ingredient{
 			{Name: "Onion", MeasureType: "unit", Quantity: 1},
 			{Name: "Rice", MeasureType: "mg", Quantity: 500},
 			{Name: "Garlic", MeasureType: "unit", Quantity: 2}})
@@ -44,6 +44,7 @@ func TestRecipeController_Add(t *testing.T) {
 		}
 
 		assert.Equal(t, []recipe.Recipe{expectedRecipes}, repository.Recipes)
+		assert.True(t, repository.MethodCalled)
 
 	})
 }
@@ -93,6 +94,33 @@ func TestRecipeController_Get(t *testing.T) {
 		err = json.Unmarshal(body, &resultRecipes)
 		assert.Equal(t, expectedRecipes, resultRecipes)
 		assert.Equal(t, resp.StatusCode, http.StatusOK)
+		assert.True(t, repository.MethodCalled)
+
+	})
+}
+
+func TestRecipeController_Delete(t *testing.T) {
+	t.Run("should delete a recipe by Id", func(t *testing.T) {
+		repository := in_memory_repository.NewRecipeManager([]recipe.Recipe{})
+		service := recipeService.NewRecipeService(repository)
+		ctrl := controller.RecipeController{RecipeProvider: service}
+		server := httptest.NewServer(ctrl)
+
+		req, err := http.NewRequest(http.MethodDelete, server.URL+"/recipes?id=1", bytes.NewBufferString(``))
+
+		if err != nil {
+			t.Fatalf("failed to create request: %v", err)
+		}
+
+		req.Header.Set("Content-Type", "application/json")
+
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			t.Fatalf("failed to send request: %v", err)
+		}
+
+		assert.Equal(t, http.StatusNoContent, resp.StatusCode)
+		assert.True(t, repository.MethodCalled)
 
 	})
 }

@@ -2,11 +2,24 @@ package controller
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"q-q-tem-pra-hoje/internal/domain/ingredient"
+	"strconv"
 
 	"q-q-tem-pra-hoje/internal/domain/recipe"
 )
+
+var (
+	ErrInvalidRequestBody = errors.New("invalid request body")
+	ErrMethodNotAllowed   = errors.New("method not allowed")
+	ErrInvalidID          = errors.New("invalid id parameter")
+)
+
+type Response struct {
+	Message string `json:"message,omitempty"`
+	Data    any    `json:"data,omitempty"`
+}
 
 type RecipeController struct {
 	IngredientProvider ingredient.IngredientStorageProvider
@@ -24,6 +37,10 @@ func (rc RecipeController) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	if r.Method == "GET" {
 		rc.GetRecipes(w, r)
+		return
+	}
+	if r.Method == "DELETE" {
+		rc.Delete(w, r)
 		return
 	}
 	w.Header().Add("Content-Type", "application/json")
@@ -88,5 +105,42 @@ func (rc RecipeController) GetRecipes(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(&recipes)
 		return
+	}
+}
+
+func (rc RecipeController) Delete(w http.ResponseWriter, r *http.Request) {
+
+	idStr := r.URL.Query().Get("id")
+	if idStr == "" {
+		rc.respondWithError(w, http.StatusBadRequest, ErrInvalidID)
+		return
+	}
+
+	id, err := strconv.ParseUint(idStr, 10, 32)
+	if err != nil {
+		rc.respondWithError(w, http.StatusBadRequest, ErrInvalidID)
+		return
+	}
+
+	if err := rc.RecipeProvider.Delete(uint(id)); err != nil {
+		rc.respondWithError(w, http.StatusInternalServerError, errors.New("failed to delete recipe"))
+		return
+	}
+	rc.respondWithJSON(w, http.StatusNoContent, nil)
+}
+
+func (rc RecipeController) respondWithError(w http.ResponseWriter, code int, err error) {
+	rc.respondWithJSON(w, code, Response{Message: err.Error()})
+}
+
+func (rc RecipeController) respondWithJSON(w http.ResponseWriter, code int, payload any) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+
+	if payload != nil {
+		if err := json.NewEncoder(w).Encode(payload); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 	}
 }
