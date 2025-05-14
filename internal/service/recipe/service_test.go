@@ -13,7 +13,7 @@ import (
 func TestRecipeService_Add(t *testing.T) {
 	t.Run("it should add a valid recipe", func(t *testing.T) {
 
-		expectedRecipe, err := recipe.NewRecipe("Rice", []ingredient.Ingredient{
+		expectedRecipe, err := recipe.NewRecipe(1, "Rice", []ingredient.Ingredient{
 			{Name: "Onion", MeasureType: "unit", Quantity: 1},
 			{Name: "Rice", MeasureType: "mg", Quantity: 500},
 			{Name: "Garlic", MeasureType: "unit", Quantity: 2}})
@@ -26,7 +26,7 @@ func TestRecipeService_Add(t *testing.T) {
 	})
 
 	t.Run("it should return an error for an invalid name", func(t *testing.T) {
-		invalidRecipe, err := recipe.NewRecipe("", []ingredient.Ingredient{ // Empty name
+		invalidRecipe, err := recipe.NewRecipe(0, "", []ingredient.Ingredient{ // Empty name
 			{Name: "Onion", MeasureType: "unit", Quantity: 1},
 			{Name: "Rice", MeasureType: "mg", Quantity: 500},
 			{Name: "Garlic", MeasureType: "unit", Quantity: 2},
@@ -41,7 +41,7 @@ func TestRecipeService_Add(t *testing.T) {
 	})
 
 	t.Run("it should return an error for invalid ingredients", func(t *testing.T) {
-		invalidRecipe, err := recipe.NewRecipe("Rice", []ingredient.Ingredient{}) // No ingredients
+		invalidRecipe, err := recipe.NewRecipe(34, "Rice", []ingredient.Ingredient{}) // No ingredients
 		manager := in_memory_repository.NewRecipeManager([]recipe.Recipe{})
 		service := recipeService.NewRecipeService(manager)
 
@@ -84,4 +84,3 @@ func TestRecipesService_FindRecipes(t *testing.T) {
 		assert.Equal(t, expectedRecipes, recipes)
 	})
 }
-

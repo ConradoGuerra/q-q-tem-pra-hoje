@@ -49,7 +49,18 @@ func (rc RecipeController) Add(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-	if err := rc.RecipeProvider.Create(recipe.Recipe(recipeDTO)); err != nil {
+	recipeCreated, err := recipe.NewRecipe(0, recipeDTO.Name, recipeDTO.Ingredients)
+
+	if err != nil {
+		w.Header().Add("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{
+			"message": "Invalid request body",
+		})
+		return
+	}
+
+	if err := rc.RecipeProvider.Create(recipe.Recipe(recipeCreated)); err != nil {
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(map[string]string{

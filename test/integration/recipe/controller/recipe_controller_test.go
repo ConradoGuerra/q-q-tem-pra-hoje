@@ -34,7 +34,7 @@ func TestRecipeController_Add(t *testing.T) {
 
 		controller.Add(w, r)
 
-		expectedRecipes, err := recipe.NewRecipe("Rice", []ingredient.Ingredient{
+		expectedRecipes, err := recipe.NewRecipe(1, "Rice", []ingredient.Ingredient{
 			{Name: "Onion", MeasureType: "unit", Quantity: 1},
 			{Name: "Rice", MeasureType: "mg", Quantity: 500},
 			{Name: "Garlic", MeasureType: "unit", Quantity: 2}})

@@ -82,3 +82,29 @@ func (rm recipeManager) GetAllRecipes() ([]recipe.Recipe, error) {
 
 	return recipesRetrieved, nil
 }
+
+func (rm recipeManager) DeleteRecipe(id int) error {
+	_, err := rm.Exec(`
+		DELETE FROM recipes_ingredients 
+		WHERE recipe_id IN (SELECT id FROM recipes WHERE id = $1)
+	`, id)
+	if err != nil {
+		return fmt.Errorf("failed to delete recipe ingredients: %v", err)
+	}
+
+	result, err := rm.Exec("DELETE FROM recipes WHERE id = $1", id)
+	if err != nil {
+		return fmt.Errorf("failed to delete recipe: %v", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("failed to check rows affected: %v", err)
+	}
+
+	if rowsAffected == 0 {
+		return fmt.Errorf("recipe not found")
+	}
+
+	return nil
+}

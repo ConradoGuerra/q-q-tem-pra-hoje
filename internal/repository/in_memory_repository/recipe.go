@@ -21,3 +21,7 @@ func (rm *recipeManager) AddRecipe(recipe recipe.Recipe) error {
 func (rm *recipeManager) GetAllRecipes() ([]recipe.Recipe, error) {
 	return rm.Recipes, nil
 }
+
+func (rm *recipeManager) DeleteRecipe(id int) error {
+	return rm.DeleteRecipe(id)
+}

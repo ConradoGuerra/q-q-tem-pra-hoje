@@ -23,3 +23,7 @@ func (rs *RecipeService) FindRecipes() ([]recipe.Recipe, error) {
 	}
 	return recipes, nil
 }
+
+func (rs *RecipeService) DeleteRecipe(id int) error {
+	return rs.RecipeManager.DeleteRecipe(id)
+}

@@ -6,6 +6,7 @@ import (
 )
 
 type Recipe struct {
+	Id          *int
 	Name        string
 	Ingredients []ingredient.Ingredient
 }
@@ -20,8 +21,8 @@ func (r *Recipe) Validate() error {
 	return nil
 }
 
-func NewRecipe(name string, ingredients []ingredient.Ingredient) (Recipe, error) {
-	recipe := Recipe{Name: name, Ingredients: ingredients}
+func NewRecipe(id int, name string, ingredients []ingredient.Ingredient) (Recipe, error) {
+	recipe := Recipe{Id: &id, Name: name, Ingredients: ingredients}
 	if err := recipe.Validate(); err != nil {
 		return Recipe{}, err
 	}

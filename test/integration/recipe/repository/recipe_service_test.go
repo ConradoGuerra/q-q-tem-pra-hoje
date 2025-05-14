@@ -202,3 +202,84 @@ func TestRecipeService_GetAllRecipes(t *testing.T) {
 		assert.Empty(t, recipes)
 	})
 }
+func TestRecipeService_DeleteRecipe(t *testing.T) {
+	dsn, teardown := testutil.SetupTestDB(t)
+	db, err := sql.Open("postgres", dsn)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = db.Exec("CREATE TABLE IF NOT EXISTS recipes (id SERIAL PRIMARY KEY, name TEXT NOT NULL UNIQUE);")
+	if err != nil {
+		t.Fatalf("failed to create table recipes: %v", err)
+	}
+	_, err = db.Exec(`
+    CREATE TABLE IF NOT EXISTS recipes_ingredients (
+        recipe_id INT NOT NULL REFERENCES recipes(id) ON DELETE CASCADE,
+        name TEXT NOT NULL,
+        measure_type TEXT NOT NULL,
+        quantity INT NOT NULL,
+        PRIMARY KEY (recipe_id,name));
+    `)
+	if err != nil {
+		t.Fatalf("failed to create table recipes_ingredients: %v", err)
+	}
+
+	defer teardown()
+	recipeManager := postgres.NewRecipeManager(db)
+	service := recipeService.NewRecipeService(recipeManager)
+
+	id_1 := int(1)
+	id_2 := int(2)
+	testRecipe := recipe.Recipe{
+		Name: "Test Recipe to Delete",
+		Ingredients: []ingredient.Ingredient{
+			{ID: &id_1, Name: "Ingredient 1", MeasureType: "unit", Quantity: 1},
+			{ID: &id_2, Name: "Ingredient 2", MeasureType: "mg", Quantity: 100},
+		},
+	}
+
+	err = service.AddRecipe(testRecipe)
+	if err != nil {
+		t.Fatalf("failed to insert test recipe: %v", err)
+	}
+
+	t.Run("should delete a recipe and its ingredients", func(t *testing.T) {
+		recipes, err := service.GetAllRecipes()
+		if err != nil {
+			t.Fatalf("failed to get all recipes: %v", err)
+		}
+		assert.NotEmpty(t, recipes)
+
+		err = service.DeleteRecipe(id_1)
+		assert.NoError(t, err)
+
+		recipes, err = service.GetAllRecipes()
+		if err != nil {
+			t.Fatalf("failed to get all recipes: %v", err)
+		}
+
+		found := false
+		for _, r := range recipes {
+			if r.Id == testRecipe.Id {
+				found = true
+				break
+			}
+		}
+		assert.False(t, found, "recipe should have been deleted but was found")
+
+		var count int
+		err = db.QueryRow(`
+			SELECT COUNT(*) FROM recipes_ingredients 
+			WHERE recipe_id IN (SELECT id FROM recipes WHERE id = $1)
+		`, testRecipe.Id).Scan(&count)
+		assert.NoError(t, err)
+		assert.Equal(t, 0, count, "ingredients should have been deleted")
+	})
+
+	t.Run("should return error when recipe doesn't exist", func(t *testing.T) {
+		err := service.DeleteRecipe(1)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "recipe not found")
+	})
+}
