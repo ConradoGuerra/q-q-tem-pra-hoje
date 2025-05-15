@@ -6,9 +6,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"q-q-tem-pra-hoje/internal/app"
-	"q-q-tem-pra-hoje/internal/repository/postgres"
-	controller "q-q-tem-pra-hoje/internal/server/controller/recipe"
-	recipeService "q-q-tem-pra-hoje/internal/service/recipe"
 	"q-q-tem-pra-hoje/internal/testutil"
 	"testing"
 
@@ -57,22 +54,15 @@ func setupDatabase(t *testing.T) (*sql.DB, func()) {
 
 func TestRecipeController_Add(t *testing.T) {
 	db, teardown := setupDatabase(t)
-	_, err := app.NewServer(db)
-	if err != nil {
-		t.Fatal(err)
-	}
+	handler := app.NewHandler(db)
 
 	t.Cleanup(func() {
-
 		teardown()
 		db.Close()
 
 	})
 
-	repository := postgres.NewRecipeManager(db)
-	service := recipeService.NewRecipeService(repository)
-	controller := controller.RecipeController{RecipeProvider: service}
-	ts := httptest.NewServer(controller)
+	ts := httptest.NewServer(handler)
 
 	defer ts.Close()
 

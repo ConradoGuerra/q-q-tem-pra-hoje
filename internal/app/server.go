@@ -16,12 +16,15 @@ type Server struct {
 	server *http.Server
 }
 
+
+func (s Server) Start() error {
+	return s.server.ListenAndServe()
+}
+
 func corsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
-
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, OPTIONS")
-
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 
 		if r.Method == http.MethodOptions {
@@ -33,8 +36,7 @@ func corsMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func NewServer(db *sql.DB) (*Server, error) {
-
+func NewHandler(db *sql.DB) http.Handler {
 	ism := postgres.NewIngredientStorageManager(db)
 	rm := postgres.NewRecipeManager(db)
 	is := ingredientService.NewService(&ism)
@@ -50,15 +52,15 @@ func NewServer(db *sql.DB) (*Server, error) {
 	mux.Handle("/recipe", rc)
 	mux.Handle("/recommendation", rec)
 
-	handler := corsMiddleware(mux)
+	return corsMiddleware(mux)
 
+}
+
+func NewServer(db *sql.DB) *Server {
+	handler := NewHandler(db)
 	return &Server{
 		server: &http.Server{
 			Addr:    ":8080",
 			Handler: handler,
-		}}, nil
-}
-
-func (s Server) Start() error {
-	return s.server.ListenAndServe()
+		}}
 }

@@ -22,10 +22,8 @@ func main() {
 	}
 	defer db.Close()
 
-	server, err := app.NewServer(db)
-	if err != nil {
-		panic(err)
-	}
+	server := app.NewServer(db)
+
 	fmt.Println("Server started at :8080")
 	if err := server.Start(); err != nil && err != http.ErrServerClosed {
 		panic(err)

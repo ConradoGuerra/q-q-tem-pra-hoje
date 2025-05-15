@@ -9,10 +9,6 @@ import (
 	"q-q-tem-pra-hoje/internal/domain/ingredient"
 	"q-q-tem-pra-hoje/internal/domain/recipe"
 	"q-q-tem-pra-hoje/internal/domain/recommendation"
-	"q-q-tem-pra-hoje/internal/repository/postgres"
-	controller "q-q-tem-pra-hoje/internal/server/controller/recommendation"
-	ingredientService "q-q-tem-pra-hoje/internal/service/ingredient"
-	recommendationService "q-q-tem-pra-hoje/internal/service/recommendation"
 	"q-q-tem-pra-hoje/internal/testutil"
 	"testing"
 
@@ -62,10 +58,7 @@ func setupDatabase(t *testing.T) (*sql.DB, func()) {
 
 func TestRecommendationController_GetRecommendation(t *testing.T) {
 	db, teardown := setupDatabase(t)
-	_, err := app.NewServer(db)
-	if err != nil {
-		t.Fatal(err)
-	}
+	handler := app.NewHandler(db)
 
 	t.Cleanup(func() {
 
@@ -74,9 +67,10 @@ func TestRecommendationController_GetRecommendation(t *testing.T) {
 
 	})
 
+	ts := httptest.NewServer(handler)
 	query := `INSERT INTO ingredients_storage(name, measure_type, quantity)
             VALUES ($1, $2, $3), ($4, $5, $6);`
-	_, err = db.Exec(query, "Onion", "unit", 1, "Rice", "mg", 500)
+	_, err := db.Exec(query, "Onion", "unit", 1, "Rice", "mg", 500)
 
 	if err != nil {
 		t.Fatal(err)
@@ -119,15 +113,6 @@ func TestRecommendationController_GetRecommendation(t *testing.T) {
 			}
 		}
 	}
-
-	recipeRepository := postgres.NewRecipeManager(db)
-	ingredientRepository := postgres.NewIngredientStorageManager(db)
-	recommendationService := recommendationService.NewRecommendationService(recipeRepository)
-	ingredientService := ingredientService.NewService(&ingredientRepository)
-	controller := controller.RecommendationController{RecommendationProvider: recommendationService, IngredientProvider: ingredientService}
-	mux := http.NewServeMux()
-	mux.HandleFunc("/recommendation", controller.GetRecommendation)
-	ts := httptest.NewServer(mux)
 
 	defer ts.Close()
 

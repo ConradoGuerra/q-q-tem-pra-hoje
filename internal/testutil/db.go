@@ -21,10 +21,12 @@ func SetupTestDB(t *testing.T) (string, func()) {
 		},
 		WaitingFor: wait.ForListeningPort("5432/tcp"),
 	}
+
 	container, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
 		ContainerRequest: req,
 		Started:          true,
 	})
+
 	if err != nil {
 		t.Fatal(err)
 	}
