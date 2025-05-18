@@ -234,8 +234,8 @@ func TestRecipeService_DeleteRecipe(t *testing.T) {
 	testRecipe := recipe.Recipe{
 		Name: "Test Recipe to Delete",
 		Ingredients: []ingredient.Ingredient{
-			{ID: &id_1, Name: "Ingredient 1", MeasureType: "unit", Quantity: 1},
-			{ID: &id_2, Name: "Ingredient 2", MeasureType: "mg", Quantity: 100},
+			{Id: &id_1, Name: "Ingredient 1", MeasureType: "unit", Quantity: 1},
+			{Id: &id_2, Name: "Ingredient 2", MeasureType: "mg", Quantity: 100},
 		},
 	}
 

@@ -230,8 +230,8 @@ func TestIngredientController_GetAll(t *testing.T) {
 				id1 := int(1)
 				id2 := int(2)
 				return []ingredient.Ingredient{
-					{ID: &id1, Name: "onion", Quantity: 20, MeasureType: "unit"},
-					{ID: &id2, Name: "garlic", Quantity: 2, MeasureType: "unit"},
+					{Id: &id1, Name: "onion", Quantity: 20, MeasureType: "unit"},
+					{Id: &id2, Name: "garlic", Quantity: 2, MeasureType: "unit"},
 				}, nil
 			},
 			expectedStatus: http.StatusOK,

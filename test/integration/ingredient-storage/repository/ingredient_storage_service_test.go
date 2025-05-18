@@ -144,7 +144,7 @@ func TestIngredientService_Update(t *testing.T) {
 		ingredientService := ingredientService.NewService(&ingredientManager)
 
 		id := 2
-		updatedIngredient := ingredient.Ingredient{ID: &id, Name: "garlic", Quantity: 1, MeasureType: "unit"}
+		updatedIngredient := ingredient.Ingredient{Id: &id, Name: "garlic", Quantity: 1, MeasureType: "unit"}
 
 		err := ingredientService.Update(updatedIngredient)
 		if err != nil {
