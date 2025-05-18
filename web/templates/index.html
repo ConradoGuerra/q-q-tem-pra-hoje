@@ -508,7 +508,6 @@
           body: JSON.stringify({ name: recipeName, ingredients }),
         });
 
-        // Clear form
         document.getElementById("recipeName").value = "";
         document.getElementById("recipeIngredients").innerHTML = `
           <div class="input-group">
@@ -544,10 +543,25 @@
                       (ing) =>
                         `<div class="ingredient-badge">${ing.Name}: ${ing.Quantity} ${ing.MeasureType}</div>`,
                     ).join("")}
+                    <button class="btn-danger" onclick="deleteRecipe('${recipe.Id}')">Delete</button>
                 </div>
             `,
           )
           .join("");
+      }
+
+      async function deleteRecipe(id) {
+        if (!confirm("Are you sure you want to delete this recipe?")) {
+          return;
+        }
+
+        showLoading();
+        await fetch(`http://localhost:8080/recipe?id=${id}`, {
+          method: "DELETE",
+        });
+
+        await getRecipes();
+        await hideLoading();
       }
 
       async function getRecommendations() {
