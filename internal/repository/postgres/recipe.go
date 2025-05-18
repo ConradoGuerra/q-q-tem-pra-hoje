@@ -16,8 +16,8 @@ func NewRecipeManager(db *sql.DB) *recipeManager {
 }
 
 func (rm recipeManager) AddRecipe(recipe recipe.Recipe) error {
-	var recipeID int
-	err := rm.QueryRow("INSERT INTO recipes (name) VALUES ($1) RETURNING id;", recipe.Name).Scan(&recipeID)
+	var recipeId  int
+	err := rm.QueryRow("INSERT INTO recipes (name) VALUES ($1) RETURNING id;", recipe.Name).Scan(&recipeId )
 	if err != nil {
 		return fmt.Errorf("failed to insert recipe: %v", err)
 	}
@@ -27,7 +27,7 @@ func (rm recipeManager) AddRecipe(recipe recipe.Recipe) error {
 		      INSERT INTO recipes_ingredients (recipe_id, name, measure_type, quantity)
 		      VALUES ($1, $2, $3, $4)
 		      ON CONFLICT (recipe_id, name) DO NOTHING;
-		  `, recipeID, ing.Name, ing.MeasureType, ing.Quantity)
+		  `, recipeId , ing.Name, ing.MeasureType, ing.Quantity)
 		if err != nil {
 			return fmt.Errorf("failed to insert a recipe ingredient: %v", err)
 		}

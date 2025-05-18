@@ -14,6 +14,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func intPtr(i int) *int {
+	return &i
+}
+
 func TestCreateRecommendations(t *testing.T) {
 
 	dsn, teardown := testutil.SetupTestDB(t)
@@ -40,30 +44,30 @@ func TestCreateRecommendations(t *testing.T) {
 	}
 
 	defer teardown()
+
 	recipes := []recipe.Recipe{
-		{Name: "Rice with Onion and Garlic", Ingredients: []ingredient.Ingredient{
+		{Id: intPtr(1), Name: "Rice with Onion and Garlic", Ingredients: []ingredient.Ingredient{
 			{Name: "Onion", MeasureType: "unit", Quantity: 1},
 			{Name: "Rice", MeasureType: "mg", Quantity: 500},
 			{Name: "Garlic", MeasureType: "unit", Quantity: 2},
 		}},
-		{Name: "Rice with Garlic", Ingredients: []ingredient.Ingredient{
+		{Id: intPtr(2), Name: "Rice with Garlic", Ingredients: []ingredient.Ingredient{
 			{Name: "Rice", MeasureType: "mg", Quantity: 500},
 			{Name: "Garlic", MeasureType: "unit", Quantity: 2},
 		}},
-		{Name: "Rice with Onion", Ingredients: []ingredient.Ingredient{
+		{Id: intPtr(3), Name: "Rice with Onion", Ingredients: []ingredient.Ingredient{
 			{Name: "Onion", MeasureType: "unit", Quantity: 1},
 			{Name: "Rice", MeasureType: "mg", Quantity: 500},
 		}},
-		{Name: "Fries", Ingredients: []ingredient.Ingredient{
+		{Id: intPtr(4), Name: "Fries", Ingredients: []ingredient.Ingredient{
 			{Name: "Potato", MeasureType: "unit", Quantity: 2},
 		}},
 	}
 
-	// Insert recipes and their ingredients
 	for _, recipe := range recipes {
 		// Insert the recipe
-		var recipeID int
-		err := db.QueryRow("INSERT INTO recipes (name) VALUES ($1) RETURNING id;", recipe.Name).Scan(&recipeID)
+		var recipeId int
+		err := db.QueryRow("INSERT INTO recipes (name) VALUES ($1) RETURNING id;", recipe.Name).Scan(&recipeId)
 		if err != nil {
 			t.Fatalf("failed to insert recipe %q: %v", recipe.Name, err)
 		}
@@ -74,7 +78,7 @@ func TestCreateRecommendations(t *testing.T) {
                 INSERT INTO recipes_ingredients (recipe_id, name, measure_type, quantity)
                 VALUES ($1, $2, $3, $4)
                 ON CONFLICT (recipe_id, name) DO NOTHING;
-            `, recipeID, ing.Name, ing.MeasureType, ing.Quantity)
+            `, recipeId, ing.Name, ing.MeasureType, ing.Quantity)
 			if err != nil {
 				t.Fatalf("failed to insert ingredient %q for recipe %q: %v", ing.Name, recipe.Name, err)
 			}

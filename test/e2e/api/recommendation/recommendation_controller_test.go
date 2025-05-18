@@ -16,6 +16,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func intPtr(i int) *int {
+	return &i
+}
+
 func setupDatabase(t *testing.T) (*sql.DB, func()) {
 	dsn, teardown := testutil.SetupTestDB(t)
 	db, err := sql.Open("postgres", dsn)
@@ -119,20 +123,20 @@ func TestRecommendationController_GetRecommendation(t *testing.T) {
 	t.Run("should provide the recommendations", func(t *testing.T) {
 
 		recipes := []recipe.Recipe{
-			{Name: "Rice with Onion and Garlic", Ingredients: []ingredient.Ingredient{
+			{Id: intPtr(1), Name: "Rice with Onion and Garlic", Ingredients: []ingredient.Ingredient{
 				{Name: "Onion", MeasureType: "unit", Quantity: 1},
 				{Name: "Rice", MeasureType: "mg", Quantity: 500},
 				{Name: "Garlic", MeasureType: "unit", Quantity: 2},
 			}},
-			{Name: "Rice with Garlic", Ingredients: []ingredient.Ingredient{
+			{Id: intPtr(2), Name: "Rice with Garlic", Ingredients: []ingredient.Ingredient{
 				{Name: "Rice", MeasureType: "mg", Quantity: 500},
 				{Name: "Garlic", MeasureType: "unit", Quantity: 2},
 			}},
-			{Name: "Rice with Onion", Ingredients: []ingredient.Ingredient{
+			{Id: intPtr(3), Name: "Rice with Onion", Ingredients: []ingredient.Ingredient{
 				{Name: "Onion", MeasureType: "unit", Quantity: 1},
 				{Name: "Rice", MeasureType: "mg", Quantity: 500},
 			}},
-			{Name: "Fries", Ingredients: []ingredient.Ingredient{
+			{Id: intPtr(4), Name: "Fries", Ingredients: []ingredient.Ingredient{
 				{Name: "Potato", MeasureType: "unit", Quantity: 2},
 			}},
 		}
