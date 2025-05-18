@@ -36,6 +36,7 @@ func (rm recipeManager) AddRecipe(recipe recipe.Recipe) error {
 }
 func (rm recipeManager) GetAllRecipes() ([]recipe.Recipe, error) {
 	rows, err := rm.Query(`SELECT 
+                          r.id,
                           r.name, 
                           i.name, 
                           i.measure_type, 
@@ -52,10 +53,11 @@ func (rm recipeManager) GetAllRecipes() ([]recipe.Recipe, error) {
 	recipeMap := make(map[string]*recipe.Recipe)
 
 	for rows.Next() {
+		var recipeId int
 		var recipeName string
 		var ingredientRetrieved ingredient.Ingredient
 
-		err := rows.Scan(&recipeName, &ingredientRetrieved.Name, &ingredientRetrieved.MeasureType, &ingredientRetrieved.Quantity)
+		err := rows.Scan(&recipeId, &recipeName, &ingredientRetrieved.Name, &ingredientRetrieved.MeasureType, &ingredientRetrieved.Quantity)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan row: %v", err)
 		}
@@ -64,6 +66,7 @@ func (rm recipeManager) GetAllRecipes() ([]recipe.Recipe, error) {
 			r.Ingredients = append(r.Ingredients, ingredientRetrieved)
 		} else {
 			newRecipe := &recipe.Recipe{
+				Id:          &recipeId,
 				Name:        recipeName,
 				Ingredients: []ingredient.Ingredient{ingredientRetrieved},
 			}

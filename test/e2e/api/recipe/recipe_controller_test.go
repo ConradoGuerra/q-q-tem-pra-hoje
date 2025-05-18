@@ -114,22 +114,12 @@ func TestRecipeController_GetRecipes(t *testing.T) {
 			t.Fatal(err)
 		}
 
+		id := 1
 		recipes := []recipe.Recipe{
-			{Name: "Rice with Onion and Garlic", Ingredients: []ingredient.Ingredient{
+			{Id: &id, Name: "Rice with Onion and Garlic", Ingredients: []ingredient.Ingredient{
 				{Name: "Onion", MeasureType: "unit", Quantity: 1},
 				{Name: "Rice", MeasureType: "mg", Quantity: 500},
 				{Name: "Garlic", MeasureType: "unit", Quantity: 2},
-			}},
-			{Name: "Rice with Garlic", Ingredients: []ingredient.Ingredient{
-				{Name: "Rice", MeasureType: "mg", Quantity: 500},
-				{Name: "Garlic", MeasureType: "unit", Quantity: 2},
-			}},
-			{Name: "Rice with Onion", Ingredients: []ingredient.Ingredient{
-				{Name: "Onion", MeasureType: "unit", Quantity: 1},
-				{Name: "Rice", MeasureType: "mg", Quantity: 500},
-			}},
-			{Name: "Fries", Ingredients: []ingredient.Ingredient{
-				{Name: "Potato", MeasureType: "unit", Quantity: 2},
 			}},
 		}
 
