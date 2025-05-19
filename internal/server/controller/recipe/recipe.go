@@ -14,7 +14,7 @@ import (
 var (
 	ErrInvalidRequestBody = errors.New("invalid request body")
 	ErrMethodNotAllowed   = errors.New("method not allowed")
-	ErrInvalidID          = errors.New("invalid id parameter")
+	ErrInvalidId          = errors.New("invalid id parameter")
 )
 
 type Response struct {
@@ -112,13 +112,13 @@ func (rc RecipeController) Delete(w http.ResponseWriter, r *http.Request) {
 
 	idStr := r.URL.Query().Get("id")
 	if idStr == "" {
-		rc.respondWithError(w, http.StatusBadRequest, ErrInvalidID)
+		rc.respondWithError(w, http.StatusBadRequest, ErrInvalidId)
 		return
 	}
 
 	id, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
-		rc.respondWithError(w, http.StatusBadRequest, ErrInvalidID)
+		rc.respondWithError(w, http.StatusBadRequest, ErrInvalidId)
 		return
 	}
 

@@ -178,13 +178,13 @@ func TestRecipeController_Delete(t *testing.T) {
 			expectedStatus: http.StatusNoContent,
 		},
 		{
-			name:           "Missing ID parameter",
+			name:           "Missing Id parameter",
 			urlPath:        "/recipe",
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   `{"message":"invalid id parameter"}`,
 		},
 		{
-			name:           "Invalid ID format",
+			name:           "Invalid Id format",
 			urlPath:        "/recipe?id=abc",
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   `{"message":"invalid id parameter"}`,

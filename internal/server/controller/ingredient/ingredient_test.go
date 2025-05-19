@@ -19,7 +19,7 @@ type MockIngredientService struct {
 	updateFunc          func(ingredient.Ingredient) error
 	lastIngredient      ingredient.Ingredient
 	deleteFunc          func(uint) error
-	lastDeletedID       uint
+	lastDeletedId       uint
 }
 
 func (m *MockIngredientService) Add(ing ingredient.Ingredient) error {
@@ -46,7 +46,7 @@ func (m *MockIngredientService) Update(ing ingredient.Ingredient) error {
 }
 
 func (m *MockIngredientService) Delete(id uint) error {
-	m.lastDeletedID = id
+	m.lastDeletedId = id
 	if m.deleteFunc != nil {
 		return m.deleteFunc(id)
 	}
@@ -235,7 +235,7 @@ func TestIngredientController_GetAll(t *testing.T) {
 				}, nil
 			},
 			expectedStatus: http.StatusOK,
-			expectedBody:   `[{"ID":1,"Name":"onion","MeasureType":"unit","Quantity":20},{"ID":2,"Name":"garlic","MeasureType":"unit","Quantity":2}]`,
+			expectedBody:   `[{"Id":1,"Name":"onion","MeasureType":"unit","Quantity":20},{"Id":2,"Name":"garlic","MeasureType":"unit","Quantity":2}]`,
 		},
 		{
 			name: "Service error",
@@ -372,17 +372,17 @@ func TestIngredientController_Delete(t *testing.T) {
 			},
 			expectedStatus: http.StatusNoContent,
 			validateMock: func(t *testing.T, m *MockIngredientService) {
-				assert.Equal(t, uint(42), m.lastDeletedID)
+				assert.Equal(t, uint(42), m.lastDeletedId)
 			},
 		},
 		{
-			name:           "Missing ID parameter",
+			name:           "Missing Id parameter",
 			urlPath:        "/ingredient",
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   `{"message":"invalid id parameter"}`,
 		},
 		{
-			name:           "Invalid ID format",
+			name:           "Invalid Id format",
 			urlPath:        "/ingredient?id=abc",
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   `{"message":"invalid id parameter"}`,
