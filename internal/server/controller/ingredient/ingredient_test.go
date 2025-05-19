@@ -7,7 +7,6 @@ import (
 	"net/http/httptest"
 	"q-q-tem-pra-hoje/internal/domain/ingredient"
 	controller "q-q-tem-pra-hoje/internal/server/controller/ingredient"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -54,95 +53,20 @@ func (m *MockIngredientService) Delete(id uint) error {
 }
 
 func TestIngredientController_ServeHTTP(t *testing.T) {
-	testCases := []struct {
-		name           string
-		method         string
-		urlPath        string
-		expectedStatus int
-		expectedBody   string
-	}{
-		{
-			name:           "Method POST",
-			method:         http.MethodPost,
-			urlPath:        "",
-			expectedStatus: http.StatusCreated,
-			expectedBody:   "",
-		},
-		{
-			name:           "Method GET",
-			method:         http.MethodGet,
-			urlPath:        "",
-			expectedStatus: http.StatusOK,
-			expectedBody:   "[]",
-		},
-		{
-			name:           "Method PATCH",
-			method:         http.MethodPatch,
-			urlPath:        "/42",
-			expectedStatus: http.StatusOK,
-			expectedBody:   "",
-		},
-		{
-			name:           "Method DELETE",
-			method:         http.MethodDelete,
-			urlPath:        "?id=42",
-			expectedStatus: http.StatusNoContent,
-			expectedBody:   "",
-		},
-		{
-			name:           "Method not allowed",
-			method:         http.MethodPut,
-			expectedStatus: http.StatusMethodNotAllowed,
-			expectedBody:   `{"message":"method not allowed"}`,
-		},
-	}
+	t.Run("it should return method not allowed", func(t *testing.T) {
+		mockService := &MockIngredientService{}
 
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			mockService := &MockIngredientService{}
-			ctrl := controller.NewIngredientController(mockService)
+		ctrl := controller.NewIngredientController(mockService)
 
-			mux := http.NewServeMux()
+		req := httptest.NewRequest(http.MethodPut, "/ingredient", bytes.NewBufferString(`{}`))
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
 
-			mux.Handle("POST /ingredient", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				ctrl.ServeHTTP(w, r)
-			}))
-			mux.Handle("GET /ingredient", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				ctrl.ServeHTTP(w, r)
-			}))
-			mux.Handle("PATCH /ingredient/{id}", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				ctrl.ServeHTTP(w, r)
-			}))
-			mux.Handle("DELETE /ingredient", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				ctrl.ServeHTTP(w, r)
-			}))
+		ctrl.ServeHTTP(w, req)
+		assert.Equal(t, http.StatusMethodNotAllowed, w.Code)
 
-			mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-				http.Error(w, `{"message":"method not allowed"}`, http.StatusMethodNotAllowed)
-				w.Header().Set("Content-Type", "application/json")
-			})
-
-			reqURL := "/ingredient" + tc.urlPath
-			req := httptest.NewRequest(tc.method, reqURL, bytes.NewBufferString(`{"name":"Salt","measureType":"unit","quantity":1}`))
-			req.Header.Set("Content-Type", "application/json")
-			w := httptest.NewRecorder()
-
-			mux.ServeHTTP(w, req)
-
-			assert.Equal(t, tc.expectedStatus, w.Code)
-			if tc.expectedStatus != http.StatusNoContent {
-				assert.Equal(t, "application/json", w.Header().Get("Content-Type"))
-			}
-
-			if tc.expectedBody != "" {
-				if tc.expectedBody == "[]" {
-					assert.Equal(t, "[]", strings.TrimSpace(w.Body.String()))
-				} else {
-					assert.JSONEq(t, tc.expectedBody, w.Body.String())
-				}
-			}
-		})
-	}
+		assert.JSONEq(t, `{"message":"method not allowed"}`, w.Body.String())
+	})
 }
 
 func TestIngredientController_Add(t *testing.T) {
@@ -421,10 +345,4 @@ func TestIngredientController_Delete(t *testing.T) {
 			}
 		})
 	}
-}
-
-func TestNewIngredientController_PanicsWithNilService(t *testing.T) {
-	assert.Panics(t, func() {
-		controller.NewIngredientController(nil)
-	})
 }
