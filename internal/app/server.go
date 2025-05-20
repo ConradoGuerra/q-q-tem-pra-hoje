@@ -16,9 +16,17 @@ type Server struct {
 	server *http.Server
 }
 
-
 func (s Server) Start() error {
 	return s.server.ListenAndServe()
+}
+
+func NewServer(db *sql.DB) *Server {
+	handler := NewHandler(db)
+	return &Server{
+		server: &http.Server{
+			Addr:    ":8080",
+			Handler: handler,
+		}}
 }
 
 func corsMiddleware(next http.Handler) http.Handler {
@@ -54,13 +62,4 @@ func NewHandler(db *sql.DB) http.Handler {
 
 	return corsMiddleware(mux)
 
-}
-
-func NewServer(db *sql.DB) *Server {
-	handler := NewHandler(db)
-	return &Server{
-		server: &http.Server{
-			Addr:    ":8080",
-			Handler: handler,
-		}}
 }
