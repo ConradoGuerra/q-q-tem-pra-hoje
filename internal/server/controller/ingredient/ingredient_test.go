@@ -95,13 +95,13 @@ func TestIngredientController_Add(t *testing.T) {
 			name:           "Invalid JSON",
 			requestBody:    `{"name":`,
 			expectedStatus: http.StatusBadRequest,
-			expectedBody:   `{"message":"invalid request body"}`,
+			expectedBody:   `{"message":"invalid or missing fields in request body"}`,
 		},
 		{
 			name:           "Empty required fields",
 			requestBody:    `{"name":"","measureType":"","quantity":1}`,
 			expectedStatus: http.StatusBadRequest,
-			expectedBody:   `{"message":"invalid request body"}`,
+			expectedBody:   `{"message":"invalid or missing fields in request body"}`,
 		},
 		{
 			name:        "Service error",
@@ -110,7 +110,7 @@ func TestIngredientController_Add(t *testing.T) {
 				return errors.New("service error")
 			},
 			expectedStatus: http.StatusInternalServerError,
-			expectedBody:   `{"message":"unexpected error"}`,
+			expectedBody:   `{"message":"internal server error"}`,
 		},
 	}
 
@@ -227,13 +227,13 @@ func TestIngredientController_Update(t *testing.T) {
 			name:           "Invalid JSON",
 			requestBody:    `{"name":`,
 			expectedStatus: http.StatusBadRequest,
-			expectedBody:   `{"message":"invalid request body"}`,
+			expectedBody:   `{"message":"invalid or missing fields in request body"}`,
 		},
 		{
 			name:           "Empty required fields",
 			requestBody:    `{"name":"","measureType":"","quantity":1}`,
 			expectedStatus: http.StatusBadRequest,
-			expectedBody:   `{"message":"invalid request body"}`,
+			expectedBody:   `{"message":"invalid or missing fields in request body"}`,
 		},
 		{
 			name:        "Service error",

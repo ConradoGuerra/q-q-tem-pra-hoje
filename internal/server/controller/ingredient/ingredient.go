@@ -9,9 +9,11 @@ import (
 )
 
 var (
-	ErrInvalidRequestBody = errors.New("invalid request body")
-	ErrMethodNotAllowed   = errors.New("method not allowed")
-	ErrInvalidId          = errors.New("invalid id parameter")
+	ErrInvalidRequestBody    = errors.New("invalid or missing fields in request body")
+	ErrMethodNotAllowed      = errors.New("method not allowed")
+	ErrInvalidId             = errors.New("invalid id parameter")
+	ErrMissingId             = errors.New("id parameter is required")
+	ErrInternalServerError   = errors.New("internal server error")
 )
 
 type Response struct {
@@ -67,7 +69,7 @@ func (ic *IngredientController) Add(w http.ResponseWriter, r *http.Request) {
 	ing := ingredient.NewIngredient(0, input.Name, input.MeasureType, input.Quantity)
 
 	if err := ic.service.Add(ing); err != nil {
-		ic.respondWithError(w, http.StatusInternalServerError, errors.New("unexpected error"))
+		ic.respondWithError(w, http.StatusInternalServerError, ErrInternalServerError)
 		return
 	}
 
@@ -88,7 +90,7 @@ func (ic *IngredientController) Update(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	intId, err := strconv.Atoi(id)
 	if id == "" || err != nil {
-		ic.respondWithError(w, http.StatusBadRequest, errors.New("id parameter is required"))
+		ic.respondWithError(w, http.StatusBadRequest, ErrMissingId)
 		return
 	}
 	var input IngredientInput
@@ -114,13 +116,8 @@ func (ic *IngredientController) Update(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ic *IngredientController) Delete(w http.ResponseWriter, r *http.Request) {
-	idStr := r.URL.Query().Get("id")
-	if idStr == "" {
-		ic.respondWithError(w, http.StatusBadRequest, ErrInvalidId)
-		return
-	}
+	id, err := ic.extractIdFromPath(r.URL.Query().Get("id"))
 
-	id, err := strconv.ParseUint(idStr, 10, 64)
 	if err != nil {
 		ic.respondWithError(w, http.StatusBadRequest, ErrInvalidId)
 		return
@@ -148,4 +145,16 @@ func (ic *IngredientController) respondWithJSON(w http.ResponseWriter, code int,
 			return
 		}
 	}
+}
+func (ic *IngredientController) extractIdFromPath(idString string) (uint, error) {
+	if idString == "" {
+		return 0, ErrMissingId
+	}
+
+	id, err := strconv.ParseUint(idString, 10, 64)
+	if err != nil {
+		return 0, ErrInvalidId
+	}
+	return uint(id), nil
+
 }
