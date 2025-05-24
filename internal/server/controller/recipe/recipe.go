@@ -3,7 +3,6 @@ package controller
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"q-q-tem-pra-hoje/internal/domain/ingredient"
 	"strconv"
@@ -94,7 +93,6 @@ func (rc RecipeController) Add(w http.ResponseWriter, r *http.Request) {
 func (rc RecipeController) GetRecipes(w http.ResponseWriter, r *http.Request) {
 
 	recipes, err := rc.RecipeProvider.FindRecipes()
-	fmt.Println(recipes)
 	if err != nil {
 
 		w.Header().Add("Content-Type", "application/json")
