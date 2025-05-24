@@ -8,255 +8,7 @@
       href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap"
       rel="stylesheet"
     />
-    <style>
-      :root {
-        /* Page background gradient */
-        --page-bg-start: #f6d365; /* warm yellow */
-        --page-bg-end: #fda085; /* peachy coral */
-
-        /* Card background (semi‑opaque) */
-        --card-bg: rgba(255, 255, 255, 0.8);
-        --card-shadow: rgba(0, 0, 0, 0.1);
-
-        /* Accent colors for buttons, badges, headings */
-        --primary: #ff6b6b; /* coral red */
-        --secondary: #4ecdc4; /* mint green */
-        --warning: #ffbe76; /* orange */
-        --danger: #ff7979; /* red */
-
-        /* Text */
-        --text-dark: #2c3e50;
-        --text-light: #ffffff;
-      }
-
-      body {
-        background: linear-gradient(
-          135deg,
-          var(--page-bg-start) 0%,
-          var(--page-bg-end) 100%
-        );
-        color: var(--text-dark);
-        font-family: "Poppins", sans-serif;
-        margin: 0 auto;
-        padding: 2rem;
-        min-height: 100vh;
-      }
-
-      .container {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 25px;
-      }
-
-      .card {
-        background: var(--card-bg);
-        border-radius: 16px;
-        padding: 1.5rem;
-        box-shadow: 0 8px 32px var(--card-shadow);
-        transition:
-          transform 0.3s ease,
-          box-shadow 0.3s ease;
-      }
-
-      .card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 12px 48px var(--card-shadow);
-      }
-
-      h1 {
-        text-align: center;
-        color: white;
-        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-        margin-bottom: 30px;
-        position: relative;
-      }
-
-      h1::after {
-        content: "";
-        position: absolute;
-        width: 80px;
-        height: 3px;
-        background: var(--primary);
-        bottom: -10px;
-        left: 50%;
-        transform: translateX(-50%);
-      }
-
-      .input-group {
-        margin-bottom: 20px;
-      }
-
-      .input-group label {
-        display: block;
-        margin-bottom: 8px;
-        color: var(--light);
-        font-weight: 500;
-      }
-
-      .input-group input,
-      .input-group select {
-        width: 100%;
-        padding: 12px;
-        border: none;
-        border-radius: 8px;
-        background: rgba(255, 255, 255, 0.1);
-        color: black;
-        font-size: 16px;
-        transition: all 0.3s ease;
-      }
-
-      .input-group input:focus,
-      .input-group select:focus {
-        outline: none;
-        background: rgba(255, 255, 255, 0.2);
-        box-shadow: 0 0 0 2px var(--primary);
-      }
-
-      button {
-        background: var(--primary);
-        color: white;
-        border: none;
-        padding: 12px 25px;
-        border-radius: 25px;
-        cursor: pointer;
-        font-weight: 500;
-        transition: all 0.3s ease;
-        width: 100%;
-        margin-top: 10px;
-      }
-
-      button:hover {
-        background: var(--secondary);
-      }
-
-      .btn-warning {
-        background: var(--warning);
-      }
-
-      .btn-warning:hover {
-        background: #f0932b;
-      }
-
-      .btn-danger {
-        background: var(--danger);
-      }
-
-      .btn-danger:hover {
-        background: #eb4d4b;
-      }
-
-      .ingredient-list {
-        margin-top: 20px;
-      }
-
-      .ingredient-item {
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 8px;
-        padding: 15px;
-        margin-bottom: 10px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-
-      .ingredient-actions {
-        display: flex;
-        gap: 8px;
-      }
-
-      .recipe-recommendations {
-        margin-top: 20px;
-      }
-
-      .recipe-card {
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 15px;
-        padding: 20px;
-        margin-bottom: 15px;
-      }
-
-      .recipe-card h3 {
-        color: var(--light);
-        margin-bottom: 15px;
-      }
-
-      .ingredient-badge {
-        background: var(--secondary);
-        color: var(--text-light);
-        padding: 8px 15px;
-        border-radius: 20px;
-        margin: 5px 0;
-        display: inline-block;
-      }
-
-      .loading-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.5);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
-        visibility: hidden;
-      }
-
-      .loading-spinner {
-        border: 4px solid rgba(255, 255, 255, 0.3);
-        border-top: 4px solid var(--primary);
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
-        animation: spin 1s linear infinite;
-      }
-
-      @keyframes spin {
-        0% {
-          transform: rotate(0deg);
-        }
-        100% {
-          transform: rotate(360deg);
-        }
-      }
-
-      /* Modal styles */
-      .modal {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.5);
-        z-index: 1001;
-        justify-content: center;
-        align-items: center;
-      }
-
-      .modal-content {
-        background: var(--card-bg);
-        padding: 2rem;
-        border-radius: 16px;
-        width: 90%;
-        max-width: 500px;
-      }
-
-      .modal-actions {
-        display: flex;
-        justify-content: flex-end;
-        gap: 10px;
-        margin-top: 20px;
-      }
-
-      /* Responsive styles */
-      @media (max-width: 768px) {
-        .container {
-          grid-template-columns: 1fr;
-        }
-      }
-    </style>
+    <link rel="stylesheet" href="../static/css/main.css" />
   </head>
   <body>
     <h1>O que é que tem pra hoje?</h1>
@@ -281,7 +33,7 @@
             <option value="mg">Milligram</option>
           </select>
         </div>
-        <button onclick="addIngredient()">Add Ingredient</button>
+        <button id="addIngredientBtn">Add Ingredient</button>
 
         <div class="ingredient-list" id="ingredientList"></div>
       </div>
@@ -308,7 +60,7 @@
                 placeholder="Ingredient name"
               />
               <input type="number" class="ingQuantity" placeholder="Quantity" />
-              <select id="ingMeasure">
+              <select class="ingMeasure">
                 <option value="unit">Unit</option>
                 <option value="g">Gram</option>
                 <option value="mg">Milligram</option>
@@ -316,17 +68,15 @@
             </div>
           </div>
         </div>
-        <button onclick="addRecipeIngredient()" class="secondary">
-          + Add Ingredient
-        </button>
-        <button onclick="createRecipe()">Create Recipe</button>
+        <button id="addRecipeIngredientBtn">+ Add Ingredient</button>
+        <button id="createRecipeBtn">Create Recipe</button>
         <div id="recipes" class="recipe-recommendations"></div>
       </div>
 
       <!-- Recommendations Section -->
       <div class="card">
         <h2>Recommendations</h2>
-        <button onclick="getRecommendations()">Get Recommendations</button>
+        <button id="getRecommendationsBtn">Get Recommendations</button>
         <div id="recommendations" class="recipe-recommendations"></div>
       </div>
     </div>
@@ -349,10 +99,8 @@
         </div>
         <input type="hidden" id="editIngredientId" />
         <div class="modal-actions">
-          <button onclick="closeModal()">Cancel</button>
-          <button class="btn-warning" onclick="updateIngredient()">
-            Update
-          </button>
+          <button id="closeModalBtn">Cancel</button>
+          <button class="btn-warning" id="updateIngredientBtn">Update</button>
         </div>
       </div>
     </div>
@@ -361,235 +109,6 @@
       <div class="loading-spinner"></div>
     </div>
 
-    <script>
-      // Add loading state management
-      function showLoading() {
-        document.getElementById("loadingOverlay").style.visibility = "visible";
-      }
-
-      function hideLoading() {
-        document.getElementById("loadingOverlay").style.visibility = "hidden";
-      }
-
-      // Modal functions
-      function openModal() {
-        document.getElementById("editModal").style.display = "flex";
-      }
-
-      function closeModal() {
-        document.getElementById("editModal").style.display = "none";
-      }
-
-      // Ingredients
-      async function addIngredient() {
-        showLoading();
-        const ingredient = {
-          name: document.getElementById("ingredientName").value,
-          measureType: document.getElementById("measureType").value,
-          quantity: parseInt(document.getElementById("quantity").value),
-        };
-
-        await fetch("http://localhost:8080/ingredient", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(ingredient),
-        });
-
-        // Clear form
-        document.getElementById("ingredientName").value = "";
-        document.getElementById("quantity").value = "";
-        document.getElementById("measureType").value = "";
-
-        await getIngredients();
-        hideLoading();
-      }
-
-      async function getIngredients() {
-        const response = await fetch("http://localhost:8080/ingredient");
-        let ingredients = await response.json();
-        if (!ingredients) {
-          const list = document.getElementById("ingredientList");
-          list.innerHTML = "";
-          return;
-        }
-        const list = document.getElementById("ingredientList");
-        list.innerHTML = ingredients
-          .map(
-            (i) =>
-              `<div class="ingredient-item">
-                    ${i.Name}
-                    <span class="ingredient-badge">${i.Quantity} ${i.MeasureType}</span>
-                    <div class="ingredient-actions">
-                      <button class="btn-warning" onclick="openEditModal('${i.Id}', '${i.Name}', ${i.Quantity}, '${i.MeasureType}')">Edit</button>
-                      <button class="btn-danger" onclick="deleteIngredient('${i.Id}')">Delete</button>
-                    </div>
-                </div>`,
-          )
-          .join("");
-      }
-
-      function openEditModal(id, name, quantity, measureType) {
-        document.getElementById("editIngredientId").value = id;
-        document.getElementById("editIngredientName").value = name;
-        document.getElementById("editQuantity").value = quantity;
-        document.getElementById("editMeasureType").value = measureType;
-        openModal();
-      }
-
-      async function updateIngredient() {
-        showLoading();
-        const id = document.getElementById("editIngredientId").value;
-        const ingredient = {
-          name: document.getElementById("editIngredientName").value,
-          quantity: parseInt(document.getElementById("editQuantity").value),
-          measureType: document.getElementById("editMeasureType").value,
-        };
-
-        await fetch(`http://localhost:8080/ingredient/${id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(ingredient),
-        });
-
-        closeModal();
-        await getIngredients();
-        hideLoading();
-      }
-
-      async function deleteIngredient(id) {
-        if (!confirm("Are you sure you want to delete this ingredient?")) {
-          return;
-        }
-
-        showLoading();
-        await fetch(`http://localhost:8080/ingredient?id=${id}`, {
-          method: "DELETE",
-        });
-
-        await getIngredients();
-        await hideLoading();
-      }
-
-      let recipeIngredients = [];
-
-      function addRecipeIngredient() {
-        const newInput = document.createElement("div");
-        newInput.className = "input-group";
-        newInput.innerHTML = `
-                <div class="ingredient-input">
-                    <input type="text" class="ingName" placeholder="Ingredient name">
-                    <input type="number" class="ingQuantity" placeholder="Quantity">
-                    <select id="ingMeasure">
-                      <option value="unit">Unit</option>
-                      <option value="g">Gram</option>
-                      <option value="mg">Milligram</option>
-                    </select>
-                </div>
-            `;
-        document.getElementById("recipeIngredients").appendChild(newInput);
-      }
-
-      async function createRecipe() {
-        showLoading();
-        const ingredients = [];
-        const recipeName = document.getElementById("recipeName").value;
-
-        document.querySelectorAll(".ingredient-input").forEach((div) => {
-          ingredients.push({
-            Name: div.querySelector(".ingName").value,
-            Quantity: +div.querySelector(".ingQuantity").value,
-            MeasureType: div.querySelector("#ingMeasure").value,
-          });
-        });
-
-        await fetch("http://localhost:8080/recipe", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name: recipeName, ingredients }),
-        });
-
-        document.getElementById("recipeName").value = "";
-        document.getElementById("recipeIngredients").innerHTML = `
-          <div class="input-group">
-            <label>Ingredient</label>
-            <div class="ingredient-input">
-              <input type="text" class="ingName" placeholder="Ingredient name">
-              <input type="number" class="ingQuantity" placeholder="Quantity">
-              <select id="ingMeasure">
-                <option value="unit">Unit</option>
-                <option value="g">Gram</option>
-                <option value="mg">Milligram</option>
-              </select>
-            </div>
-          </div>
-        `;
-
-        await getRecipes();
-        hideLoading();
-      }
-
-      async function getRecipes() {
-        const response = await fetch("http://localhost:8080/recipe");
-        const recipes = await response.json();
-
-        const container = document.getElementById("recipes");
-
-        container.innerHTML = recipes
-          .map(
-            (recipe) => `<div class="recipe-card">
-                    <h3>${recipe.Name}</h3>
-                    <div>Requires:</div>
-                    ${recipe.Ingredients.map(
-                      (ing) =>
-                        `<div class="ingredient-badge">${ing.Name}: ${ing.Quantity} ${ing.MeasureType}</div>`,
-                    ).join("")}
-                    <button class="btn-danger" onclick="deleteRecipe('${recipe.Id}')">Delete</button>
-                </div>
-            `,
-          )
-          .join("");
-      }
-
-      async function deleteRecipe(id) {
-        if (!confirm("Are you sure you want to delete this recipe?")) {
-          return;
-        }
-
-        showLoading();
-        await fetch(`http://localhost:8080/recipe?id=${id}`, {
-          method: "DELETE",
-        });
-
-        await getRecipes();
-        await hideLoading();
-      }
-
-      async function getRecommendations() {
-        showLoading();
-        const response = await fetch("http://localhost:8080/recommendation");
-        const recipes = await response.json();
-
-        const container = document.getElementById("recommendations");
-
-        container.innerHTML = recipes
-          .map(
-            (recipe) => `<div class="recipe-card">
-                    <h3>${recipe.Recipe.Name}</h3>
-                    <div>Requires:</div>
-                    ${recipe.Recipe.Ingredients.map(
-                      (ing) =>
-                        `<div class="ingredient-badge">${ing.Name}: ${ing.Quantity} ${ing.MeasureType}</div>`,
-                    ).join("")}
-                </div>
-            `,
-          )
-          .join("");
-
-        hideLoading();
-      }
-
-      getIngredients();
-      getRecipes();
-    </script>
+    <script src="../static/js/main.js"></script>
   </body>
 </html>
