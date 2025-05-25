@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"database/sql"
 	"encoding/json"
+	"github.com/stretchr/testify/assert"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -12,19 +13,13 @@ import (
 	"q-q-tem-pra-hoje/internal/domain/recipe"
 	"q-q-tem-pra-hoje/internal/testutil"
 	"testing"
-
-	_ "github.com/lib/pq"
-	"github.com/stretchr/testify/assert"
 )
 
 func setupDatabase(t *testing.T) (*sql.DB, func()) {
-	dsn, teardown := testutil.SetupTestDB(t)
-	db, err := sql.Open("postgres", dsn)
-	if err != nil {
-		t.Fatal(err)
-	}
+	dsn, teardown := testutil.SetupTestDB()
+	db := testutil.Connect(dsn)
 
-	_, err = db.Exec("CREATE TABLE IF NOT EXISTS recipes (id SERIAL PRIMARY KEY, name TEXT NOT NULL UNIQUE);")
+	_, err := db.Exec("CREATE TABLE IF NOT EXISTS recipes (id SERIAL PRIMARY KEY, name TEXT NOT NULL UNIQUE);")
 	if err != nil {
 		t.Fatalf("failed to create table recipes: %v", err)
 	}

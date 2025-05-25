@@ -1,7 +1,7 @@
 package integration_test
 
 import (
-	"database/sql"
+	"github.com/stretchr/testify/assert"
 	"q-q-tem-pra-hoje/internal/domain/ingredient"
 	"q-q-tem-pra-hoje/internal/domain/recipe"
 	"q-q-tem-pra-hoje/internal/domain/recommendation"
@@ -9,9 +9,6 @@ import (
 	recommendationService "q-q-tem-pra-hoje/internal/service/recommendation"
 	"q-q-tem-pra-hoje/internal/testutil"
 	"testing"
-
-	_ "github.com/lib/pq"
-	"github.com/stretchr/testify/assert"
 )
 
 func intPtr(i int) *int {
@@ -20,13 +17,10 @@ func intPtr(i int) *int {
 
 func TestCreateRecommendations(t *testing.T) {
 
-	dsn, teardown := testutil.SetupTestDB(t)
-	db, err := sql.Open("postgres", dsn)
-	if err != nil {
-		t.Fatal(err)
-	}
+	dsn, teardown := testutil.SetupTestDB()
+	db := testutil.Connect(dsn)
 
-	_, err = db.Exec("CREATE TABLE IF NOT EXISTS recipes (id SERIAL PRIMARY KEY, name TEXT NOT NULL UNIQUE);")
+	_, err := db.Exec("CREATE TABLE IF NOT EXISTS recipes (id SERIAL PRIMARY KEY, name TEXT NOT NULL UNIQUE);")
 	if err != nil {
 		t.Fatalf("failed to create table recipes: %v", err)
 	}

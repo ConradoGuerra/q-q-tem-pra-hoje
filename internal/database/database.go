@@ -8,12 +8,15 @@ import (
 	_ "github.com/lib/pq"
 )
 
-func Connect() (*sql.DB, error) {
+func SetupDB() string {
 	config := config.LoadDatabaseConfig()
 
-	connStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+	return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		config.DBHost, config.DBPort, config.DBUser, config.DBPassword, config.DBName)
 
+}
+
+func Connect(connStr string ) (*sql.DB, error) {
 	db, err := sql.Open("postgres", connStr)
 
 	if err != nil {

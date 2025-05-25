@@ -1,7 +1,6 @@
 package e2e_test
 
 import (
-	"database/sql"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -20,61 +19,20 @@ func intPtr(i int) *int {
 	return &i
 }
 
-func setupDatabase(t *testing.T) (*sql.DB, func()) {
-	dsn, teardown := testutil.SetupTestDB(t)
-	db, err := sql.Open("postgres", dsn)
+
+func TestRecommendationController_GetRecommendation(t *testing.T) {
+	db := testutil.GetDB()
+	tx, err := db.Begin()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	_, err = db.Exec("CREATE TABLE IF NOT EXISTS recipes (id SERIAL PRIMARY KEY, name TEXT NOT NULL UNIQUE);")
-	if err != nil {
-		t.Fatalf("failed to create table recipes: %v", err)
-	}
-
-	_, err = db.Exec(`
-    CREATE TABLE IF NOT EXISTS recipes_ingredients (
-        recipe_id INT NOT NULL REFERENCES recipes(id) ON DELETE CASCADE,
-        name TEXT NOT NULL,
-        measure_type TEXT NOT NULL,
-        quantity INT NOT NULL,
-        PRIMARY KEY (recipe_id,name));
-    `)
-
-	if err != nil {
-		t.Fatalf("failed to create table recipes_ingredients: %v", err)
-	}
-
-	_, err = db.Exec(`
-        CREATE TABLE IF NOT EXISTS ingredients_storage (
-            id SERIAL PRIMARY KEY,
-            name TEXT NOT NULL,
-            measure_type TEXT NOT NULL,
-            quantity INT NOT NULL
-        );
-    `)
-
-	if err != nil {
-		t.Fatalf("failed to create the ingredients_storage table: %v", err)
-	}
-	return db, teardown
-}
-
-func TestRecommendationController_GetRecommendation(t *testing.T) {
-	db, teardown := setupDatabase(t)
-	handler := app.NewHandler(db)
-
-	t.Cleanup(func() {
-
-		teardown()
-		db.Close()
-
-	})
+	handler := app.NewHandler(testutil.DB)
 
 	ts := httptest.NewServer(handler)
 	query := `INSERT INTO ingredients_storage(name, measure_type, quantity)
             VALUES ($1, $2, $3), ($4, $5, $6);`
-	_, err := db.Exec(query, "Onion", "unit", 1, "Rice", "mg", 500)
+	_, err = tx.Exec(query, "Onion", "unit", 1, "Rice", "mg", 500)
 
 	if err != nil {
 		t.Fatal(err)
@@ -101,13 +59,13 @@ func TestRecommendationController_GetRecommendation(t *testing.T) {
 
 	for _, recipe := range recipes {
 		var recipeId int
-		err := db.QueryRow("INSERT INTO recipes (name) VALUES ($1) RETURNING id;", recipe.Name).Scan(&recipeId)
+		err := tx.QueryRow("INSERT INTO recipes (name) VALUES ($1) RETURNING id;", recipe.Name).Scan(&recipeId)
 		if err != nil {
 			t.Fatalf("failed to insert recipe %q: %v", recipe.Name, err)
 		}
 
 		for _, ing := range recipe.Ingredients {
-			_, err := db.Exec(`
+			_, err := tx.Exec(`
                 INSERT INTO recipes_ingredients (recipe_id, name, measure_type, quantity)
                 VALUES ($1, $2, $3, $4)
                 ON CONFLICT (recipe_id, name) DO NOTHING;
@@ -118,7 +76,15 @@ func TestRecommendationController_GetRecommendation(t *testing.T) {
 		}
 	}
 
-	defer ts.Close()
+	err = tx.Commit()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	t.Cleanup(func() {
+		tx.Rollback()
+		ts.Close()
+	})
 
 	t.Run("should provide the recommendations", func(t *testing.T) {
 

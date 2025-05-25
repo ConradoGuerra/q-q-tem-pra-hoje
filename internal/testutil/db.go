@@ -2,14 +2,17 @@ package testutil
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
-	"testing"
-
+	_ "github.com/lib/pq"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
+	"log"
 )
 
-func SetupTestDB(t *testing.T) (string, func()) {
+var DB *sql.DB
+
+func SetupTestDB() (string, func()) {
 	ctx := context.Background()
 	req := testcontainers.ContainerRequest{
 		Image:        "postgres:15",
@@ -28,7 +31,7 @@ func SetupTestDB(t *testing.T) (string, func()) {
 	})
 
 	if err != nil {
-		t.Fatal(err)
+		log.Fatal(err)
 	}
 
 	host, _ := container.Host(ctx)
@@ -41,6 +44,21 @@ func SetupTestDB(t *testing.T) (string, func()) {
 	}
 }
 
-func Connect() {
+func Connect(connStr string) *sql.DB {
+	db, err := sql.Open("postgres", connStr)
+	if err != nil {
+		log.Fatalf("failed to open DB: %v", err)
+	}
+	return db
 
+}
+func SetDB(db *sql.DB) {
+    DB = db
+}
+
+func GetDB() *sql.DB {
+	if DB == nil {
+		panic("DB not initialized")
+	}
+	return DB
 }

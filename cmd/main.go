@@ -16,7 +16,9 @@ func main() {
 	if err != nil {
 		fmt.Printf("error loading .env file: %v", err)
 	}
-	db, err := database.Connect()
+
+	connStr := database.SetupDB()
+	db, err := database.Connect(connStr)
 	if err != nil {
 		panic(err)
 	}

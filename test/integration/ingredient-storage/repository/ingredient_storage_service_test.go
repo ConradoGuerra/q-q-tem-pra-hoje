@@ -1,27 +1,19 @@
 package integration_test
 
 import (
-	"database/sql"
 	"q-q-tem-pra-hoje/internal/domain/ingredient"
 	"q-q-tem-pra-hoje/internal/repository/postgres"
 	ingredientService "q-q-tem-pra-hoje/internal/service/ingredient"
 	"q-q-tem-pra-hoje/internal/testutil"
 	"testing"
-
-	_ "github.com/lib/pq"
 	"github.com/stretchr/testify/assert"
-
 )
 
-
 func TestIngredientService_Add(t *testing.T) {
-	dsn, teardown := testutil.SetupTestDB(t)
-	db, err := sql.Open("postgres", dsn)
-	if err != nil {
-		t.Fatal(err)
-	}
+	dsn, teardown := testutil.SetupTestDB()
+	db := testutil.Connect(dsn)
 
-	_, err = db.Exec(`
+	_, err := db.Exec(`
         CREATE TABLE IF NOT EXISTS ingredients_storage (
             id SERIAL PRIMARY KEY,
             name TEXT NOT NULL,
@@ -61,13 +53,10 @@ func TestIngredientService_Add(t *testing.T) {
 }
 
 func TestIngredientService_Find(t *testing.T) {
-	dsn, teardown := testutil.SetupTestDB(t)
-	db, err := sql.Open("postgres", dsn)
-	if err != nil {
-		t.Fatal(err)
-	}
+	dsn, teardown := testutil.SetupTestDB()
+	db := testutil.Connect(dsn)
 
-	_, err = db.Exec(`
+	_, err := db.Exec(`
         CREATE TABLE IF NOT EXISTS ingredients_storage (
             id SERIAL PRIMARY KEY,
             name TEXT NOT NULL,
@@ -109,13 +98,10 @@ func TestIngredientService_Find(t *testing.T) {
 }
 
 func TestIngredientService_Update(t *testing.T) {
-	dsn, teardown := testutil.SetupTestDB(t)
-	db, err := sql.Open("postgres", dsn)
-	if err != nil {
-		t.Fatal(err)
-	}
+	dsn, teardown := testutil.SetupTestDB()
+	db := testutil.Connect(dsn)
 
-	_, err = db.Exec(`
+	_, err := db.Exec(`
         CREATE TABLE IF NOT EXISTS ingredients_storage (
             id SERIAL PRIMARY KEY,
             name TEXT NOT NULL,
@@ -166,13 +152,10 @@ func TestIngredientService_Update(t *testing.T) {
 }
 
 func TestIngredientService_Delete(t *testing.T) {
-	dsn, teardown := testutil.SetupTestDB(t)
-	db, err := sql.Open("postgres", dsn)
-	if err != nil {
-		t.Fatal(err)
-	}
+	dsn, teardown := testutil.SetupTestDB()
+	db := testutil.Connect(dsn)
 
-	_, err = db.Exec(`
+	_, err := db.Exec(`
         CREATE TABLE IF NOT EXISTS ingredients_storage (
             id SERIAL PRIMARY KEY,
             name TEXT NOT NULL,
