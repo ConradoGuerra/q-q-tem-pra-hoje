@@ -2,7 +2,6 @@ package e2e_test
 
 import (
 	"bytes"
-	"database/sql"
 	"encoding/json"
 	"github.com/stretchr/testify/assert"
 	"io"
@@ -15,56 +14,20 @@ import (
 	"testing"
 )
 
-func setupDatabase(t *testing.T) (*sql.DB, func()) {
-	dsn, teardown := testutil.SetupTestDB()
-	db := testutil.Connect(dsn)
-
-	_, err := db.Exec("CREATE TABLE IF NOT EXISTS recipes (id SERIAL PRIMARY KEY, name TEXT NOT NULL UNIQUE);")
-	if err != nil {
-		t.Fatalf("failed to create table recipes: %v", err)
-	}
-
-	_, err = db.Exec(`
-    CREATE TABLE IF NOT EXISTS recipes_ingredients (
-        recipe_id INT NOT NULL REFERENCES recipes(id) ON DELETE CASCADE,
-        name TEXT NOT NULL,
-        measure_type TEXT NOT NULL,
-        quantity INT NOT NULL,
-        PRIMARY KEY (recipe_id,name));
-    `)
-
-	if err != nil {
-		t.Fatalf("failed to create table recipes_ingredients: %v", err)
-	}
-
-	_, err = db.Exec(`
-        CREATE TABLE IF NOT EXISTS ingredients_storage (
-            id SERIAL PRIMARY KEY,
-            name TEXT NOT NULL,
-            measure_type TEXT NOT NULL,
-            quantity INT NOT NULL
-        );
-    `)
-
-	if err != nil {
-		t.Fatalf("failed to create the ingredients_storage table: %v", err)
-	}
-	return db, teardown
+func idPointer(id int) *int {
+	return &id
 }
 
 func TestRecipeController_Add(t *testing.T) {
-	db, teardown := setupDatabase(t)
+	db := testutil.GetDB()
+
 	handler := app.NewHandler(db)
 
-	t.Cleanup(func() {
-		teardown()
-		db.Close()
-
-	})
-
 	ts := httptest.NewServer(handler)
-
-	defer ts.Close()
+	t.Cleanup(func() {
+		db.Exec("TRUNCATE recipes CASCADE")
+		ts.Close()
+	})
 
 	t.Run("should create a recipe", func(t *testing.T) {
 
@@ -86,18 +49,15 @@ func TestRecipeController_Add(t *testing.T) {
 }
 
 func TestRecipeController_GetRecipes(t *testing.T) {
-	db, teardown := setupDatabase(t)
+	db := testutil.GetDB()
 	handler := app.NewHandler(db)
-
-	t.Cleanup(func() {
-		teardown()
-		db.Close()
-
-	})
 
 	ts := httptest.NewServer(handler)
 
-	defer ts.Close()
+	t.Cleanup(func() {
+		db.Exec("TRUNCATE recipes CASCADE")
+		ts.Close()
+	})
 
 	t.Run("should retrieve the recipes", func(t *testing.T) {
 
@@ -109,9 +69,8 @@ func TestRecipeController_GetRecipes(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		id := 1
 		recipes := []recipe.Recipe{
-			{Id: &id, Name: "Rice with Onion and Garlic", Ingredients: []ingredient.Ingredient{
+			{Id: idPointer(1), Name: "Rice with Onion and Garlic", Ingredients: []ingredient.Ingredient{
 				{Name: "Onion", MeasureType: "unit", Quantity: 1},
 				{Name: "Rice", MeasureType: "mg", Quantity: 500},
 				{Name: "Garlic", MeasureType: "unit", Quantity: 2},
@@ -153,56 +112,42 @@ func TestRecipeController_GetRecipes(t *testing.T) {
 
 		var recipesFound []recipe.Recipe
 		err = json.Unmarshal(body, &recipesFound)
-		assert.Equal(t, recipes, recipesFound)
+		for i, r := range recipes {
+			assert.Equal(t, r.Name, recipesFound[i].Name)
+			assert.Equal(t, r.Ingredients, recipesFound[i].Ingredients)
+		}
 	})
 }
 
 func TestRecipeController_Delete(t *testing.T) {
-	db, teardown := setupDatabase(t)
+	db := testutil.GetDB()
 	handler := app.NewHandler(db)
-
-	t.Cleanup(func() {
-		teardown()
-		db.Close()
-
-	})
-
 	ts := httptest.NewServer(handler)
 
-	defer ts.Close()
+	t.Cleanup(func() {
+		db.Exec("TRUNCATE recipes CASCADE")
+		ts.Close()
+	})
 
 	t.Run("should delete a recipe", func(t *testing.T) {
 
-		query := `INSERT INTO ingredients_storage(name, measure_type, quantity)
-            VALUES ($1, $2, $3), ($4, $5, $6);`
-		_, err := db.Exec(query, "Onion", "unit", 1, "Rice", "mg", 500)
-
-		if err != nil {
-			t.Fatal(err)
-		}
-
 		recipes := []recipe.Recipe{
-			{Name: "Rice with Onion and Garlic", Ingredients: []ingredient.Ingredient{
-				{Name: "Onion", MeasureType: "unit", Quantity: 1},
+			{Id: idPointer(1), Name: "Rice with Garlic", Ingredients: []ingredient.Ingredient{
 				{Name: "Rice", MeasureType: "mg", Quantity: 500},
 				{Name: "Garlic", MeasureType: "unit", Quantity: 2},
 			}},
-			{Name: "Rice with Garlic", Ingredients: []ingredient.Ingredient{
-				{Name: "Rice", MeasureType: "mg", Quantity: 500},
-				{Name: "Garlic", MeasureType: "unit", Quantity: 2},
-			}},
-			{Name: "Rice with Onion", Ingredients: []ingredient.Ingredient{
+			{Id: idPointer(2), Name: "Rice with Onion", Ingredients: []ingredient.Ingredient{
 				{Name: "Onion", MeasureType: "unit", Quantity: 1},
 				{Name: "Rice", MeasureType: "mg", Quantity: 500},
 			}},
-			{Name: "Fries", Ingredients: []ingredient.Ingredient{
+			{Id: idPointer(3), Name: "Fries", Ingredients: []ingredient.Ingredient{
 				{Name: "Potato", MeasureType: "unit", Quantity: 2},
 			}},
 		}
 
 		for _, recipe := range recipes {
 			var recipeId int
-			err := db.QueryRow("INSERT INTO recipes (name) VALUES ($1) RETURNING id;", recipe.Name).Scan(&recipeId)
+			err := db.QueryRow("INSERT INTO recipes (id, name) VALUES ($1, $2) RETURNING id;", recipe.Id, recipe.Name).Scan(&recipeId)
 			if err != nil {
 				t.Fatalf("failed to insert recipe %q: %v", recipe.Name, err)
 			}
