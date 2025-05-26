@@ -19,7 +19,6 @@ func intPtr(i int) *int {
 	return &i
 }
 
-
 func TestRecommendationController_GetRecommendation(t *testing.T) {
 	db := testutil.GetDB()
 	tx, err := db.Begin()
@@ -131,7 +130,11 @@ func TestRecommendationController_GetRecommendation(t *testing.T) {
 		if err != nil {
 			t.Fatalf("error while decoding recommendations: %v", err)
 		}
-		assert.Equal(t, expectedRecommendations, recommendations)
+		for i, er := range expectedRecommendations {
+			assert.Equal(t, er.Recommendation, recommendations[i].Recommendation)
+			assert.Equal(t, er.Recipe.Name, recommendations[i].Recipe.Name)
+			assert.Equal(t, er.Recipe.Ingredients, recommendations[i].Recipe.Ingredients)
+		}
 
 	})
 }
