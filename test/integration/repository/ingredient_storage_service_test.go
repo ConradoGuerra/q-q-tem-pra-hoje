@@ -1,41 +1,20 @@
 package integration_repository_test
 
 import (
-	"database/sql"
 	"q-q-tem-pra-hoje/internal/domain/ingredient"
 	"q-q-tem-pra-hoje/internal/repository/postgres"
 	ingredientService "q-q-tem-pra-hoje/internal/service/ingredient"
 	"q-q-tem-pra-hoje/internal/testutil"
 	"testing"
-
 	"github.com/stretchr/testify/assert"
 )
 
-func cleanUpTable(t *testing.T, db *sql.DB) {
-	_, err := db.Exec("TRUNCATE TABLE ingredients_storage RESTART IDENTITY CASCADE")
-	if err != nil {
-		t.Fatal(err)
-	}
-}
-
-func createDataset(t *testing.T, db *sql.DB) {
-	query := `INSERT INTO ingredients_storage(id, name, measure_type, quantity) 
-            VALUES (1, $1, $2, $3), (2, $4, $5, $6);`
-
-	_, err := db.Exec(query, "onion", "unit", 10, "garlic", "unit", 10)
-
-	if err != nil {
-		t.Fatal(err)
-	}
-}
 
 func TestIngredientService_Add(t *testing.T) {
 	db := testutil.GetDB()
-
 	t.Cleanup(func() { cleanUpTable(t, db) })
 
 	ingredientManager := postgres.NewIngredientStorageManager(db)
-
 	service := ingredientService.NewService(&ingredientManager)
 
 	ingredientCreated := ingredient.Ingredient{Name: "Salt", Quantity: 1, MeasureType: "unit"}
@@ -60,9 +39,8 @@ func TestIngredientService_Add(t *testing.T) {
 
 func TestIngredientService_FindIngredients(t *testing.T) {
 	db := testutil.GetDB()
-
-	t.Cleanup(func() { cleanUpTable(t, db) })
 	createDataset(t, db)
+	t.Cleanup(func() { cleanUpTable(t, db) })
 
 	t.Run("should find aggregated ingredients from the database", func(t *testing.T) {
 
@@ -84,9 +62,8 @@ func TestIngredientService_FindIngredients(t *testing.T) {
 
 func TestIngredientService_Update(t *testing.T) {
 	db := testutil.GetDB()
-
-	t.Cleanup(func() { cleanUpTable(t, db) })
 	createDataset(t, db)
+	t.Cleanup(func() { cleanUpTable(t, db) })
 
 	t.Run("should update an ingredient value", func(t *testing.T) {
 
@@ -117,9 +94,8 @@ func TestIngredientService_Update(t *testing.T) {
 
 func TestIngredientService_Delete(t *testing.T) {
 	db := testutil.GetDB()
-
-	t.Cleanup(func() { cleanUpTable(t, db) })
 	createDataset(t, db)
+	t.Cleanup(func() { cleanUpTable(t, db) })
 
 	t.Run("should remove an ingredient", func(t *testing.T) {
 
