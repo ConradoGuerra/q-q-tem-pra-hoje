@@ -1,32 +1,38 @@
-package integration_test
+package integration_repository_test
 
 import (
+	"database/sql"
 	"q-q-tem-pra-hoje/internal/domain/ingredient"
 	"q-q-tem-pra-hoje/internal/repository/postgres"
 	ingredientService "q-q-tem-pra-hoje/internal/service/ingredient"
 	"q-q-tem-pra-hoje/internal/testutil"
 	"testing"
+
 	"github.com/stretchr/testify/assert"
 )
 
-func TestIngredientService_Add(t *testing.T) {
-	dsn, teardown := testutil.SetupTestDB()
-	db := testutil.Connect(dsn)
+func cleanUpTable(t *testing.T, db *sql.DB) {
+	_, err := db.Exec("TRUNCATE TABLE ingredients_storage RESTART IDENTITY CASCADE")
+	if err != nil {
+		t.Fatal(err)
+	}
+}
 
-	_, err := db.Exec(`
-        CREATE TABLE IF NOT EXISTS ingredients_storage (
-            id SERIAL PRIMARY KEY,
-            name TEXT NOT NULL,
-            measure_type TEXT NOT NULL,
-            quantity INT NOT NULL
-        );
-    `)
+func createDataset(t *testing.T, db *sql.DB) {
+	query := `INSERT INTO ingredients_storage(id, name, measure_type, quantity) 
+            VALUES (1, $1, $2, $3), (2, $4, $5, $6);`
+
+	_, err := db.Exec(query, "onion", "unit", 10, "garlic", "unit", 10)
 
 	if err != nil {
-		t.Fatalf("failed to create table ingredients_storage: %v", err)
+		t.Fatal(err)
 	}
+}
 
-	defer teardown()
+func TestIngredientService_Add(t *testing.T) {
+	db := testutil.GetDB()
+
+	t.Cleanup(func() { cleanUpTable(t, db) })
 
 	ingredientManager := postgres.NewIngredientStorageManager(db)
 
@@ -52,32 +58,11 @@ func TestIngredientService_Add(t *testing.T) {
 	})
 }
 
-func TestIngredientService_Find(t *testing.T) {
-	dsn, teardown := testutil.SetupTestDB()
-	db := testutil.Connect(dsn)
+func TestIngredientService_FindIngredients(t *testing.T) {
+	db := testutil.GetDB()
 
-	_, err := db.Exec(`
-        CREATE TABLE IF NOT EXISTS ingredients_storage (
-            id SERIAL PRIMARY KEY,
-            name TEXT NOT NULL,
-            measure_type TEXT NOT NULL,
-            quantity INT NOT NULL
-        );
-    `)
-
-	if err != nil {
-		t.Fatalf("failed to create table ingredients_storage: %v", err)
-	}
-
-	defer teardown()
-
-	query := `INSERT INTO ingredients_storage(name, measure_type, quantity) 
-            VALUES ($1, $2, $3), ($4, $5, $6);`
-	_, err = db.Exec(query, "onion", "unit", 10, "garlic", "unit", 10)
-
-	if err != nil {
-		t.Fatal(err)
-	}
+	t.Cleanup(func() { cleanUpTable(t, db) })
+	createDataset(t, db)
 
 	t.Run("should find aggregated ingredients from the database", func(t *testing.T) {
 
@@ -98,31 +83,10 @@ func TestIngredientService_Find(t *testing.T) {
 }
 
 func TestIngredientService_Update(t *testing.T) {
-	dsn, teardown := testutil.SetupTestDB()
-	db := testutil.Connect(dsn)
+	db := testutil.GetDB()
 
-	_, err := db.Exec(`
-        CREATE TABLE IF NOT EXISTS ingredients_storage (
-            id SERIAL PRIMARY KEY,
-            name TEXT NOT NULL,
-            measure_type TEXT NOT NULL,
-            quantity INT NOT NULL
-        );
-    `)
-
-	if err != nil {
-		t.Fatalf("failed to create table ingredients_storage: %v", err)
-	}
-
-	defer teardown()
-
-	query := `INSERT INTO ingredients_storage(id, name, measure_type, quantity) 
-            VALUES (1, $1, $2, $3), (2, $4, $5, $6);`
-	_, err = db.Exec(query, "onion", "unit", 10, "onion", "unit", 10)
-
-	if err != nil {
-		t.Fatal(err)
-	}
+	t.Cleanup(func() { cleanUpTable(t, db) })
+	createDataset(t, db)
 
 	t.Run("should update an ingredient value", func(t *testing.T) {
 
@@ -152,31 +116,10 @@ func TestIngredientService_Update(t *testing.T) {
 }
 
 func TestIngredientService_Delete(t *testing.T) {
-	dsn, teardown := testutil.SetupTestDB()
-	db := testutil.Connect(dsn)
+	db := testutil.GetDB()
 
-	_, err := db.Exec(`
-        CREATE TABLE IF NOT EXISTS ingredients_storage (
-            id SERIAL PRIMARY KEY,
-            name TEXT NOT NULL,
-            measure_type TEXT NOT NULL,
-            quantity INT NOT NULL
-        );
-    `)
-
-	if err != nil {
-		t.Fatalf("failed to create table ingredients_storage: %v", err)
-	}
-
-	defer teardown()
-
-	query := `INSERT INTO ingredients_storage(id, name, measure_type, quantity) 
-            VALUES (1, $1, $2, $3), (2, $4, $5, $6);`
-	_, err = db.Exec(query, "onion", "unit", 10, "onion", "unit", 10)
-
-	if err != nil {
-		t.Fatal(err)
-	}
+	t.Cleanup(func() { cleanUpTable(t, db) })
+	createDataset(t, db)
 
 	t.Run("should remove an ingredient", func(t *testing.T) {
 
