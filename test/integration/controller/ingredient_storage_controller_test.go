@@ -1,4 +1,4 @@
-package integration_test
+package controller_integration_test
 
 import (
 	"bytes"
