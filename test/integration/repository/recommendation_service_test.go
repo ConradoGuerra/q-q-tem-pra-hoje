@@ -1,4 +1,4 @@
-package integration_repository_test
+package respository_integration_test
 
 import (
 	"github.com/stretchr/testify/assert"
@@ -20,7 +20,7 @@ func TestCreateRecommendations(t *testing.T) {
 
 	service := recommendationService.NewRecommendationService(recipeManager)
 
-	t.Run("should create the recommendations", func(t *testing.T) {
+	t.Run("should create recommendations", func(t *testing.T) {
 
 		availableIngredients := []ingredient.Ingredient{
 			{Name: "Onion", MeasureType: "unit", Quantity: 1},

@@ -1,4 +1,4 @@
-package integration_repository_test
+package respository_integration_test
 
 import (
 	"q-q-tem-pra-hoje/internal/domain/ingredient"

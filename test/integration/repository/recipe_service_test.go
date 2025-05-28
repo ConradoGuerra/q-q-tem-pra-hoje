@@ -1,4 +1,4 @@
-package integration_repository_test
+package respository_integration_test
 
 import (
 	"github.com/stretchr/testify/assert"
