@@ -2,6 +2,7 @@ package e2e_test
 
 import (
 	"encoding/json"
+	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"q-q-tem-pra-hoje/internal/app"
@@ -10,9 +11,6 @@ import (
 	"q-q-tem-pra-hoje/internal/domain/recommendation"
 	"q-q-tem-pra-hoje/internal/testutil"
 	"testing"
-
-	_ "github.com/lib/pq"
-	"github.com/stretchr/testify/assert"
 )
 
 func intPtr(i int) *int {

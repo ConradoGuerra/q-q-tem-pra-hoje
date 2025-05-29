@@ -7,8 +7,6 @@ import (
 	"q-q-tem-pra-hoje/internal/domain/recipe"
 	"q-q-tem-pra-hoje/internal/testutil"
 	"testing"
-
-	_ "github.com/lib/pq"
 )
 
 func TestMain(m *testing.M) {
@@ -23,7 +21,6 @@ func TestMain(m *testing.M) {
 
 	os.Exit(code)
 }
-
 
 func cleanUpTable(t *testing.T, db *sql.DB) {
 	_, err := db.Exec("TRUNCATE TABLE ingredients_storage RESTART IDENTITY CASCADE")

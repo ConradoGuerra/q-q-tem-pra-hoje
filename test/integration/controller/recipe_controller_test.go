@@ -3,6 +3,7 @@ package controller_integration_test
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/stretchr/testify/assert"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -12,8 +13,6 @@ import (
 	controller "q-q-tem-pra-hoje/internal/server/controller/recipe"
 	recipeService "q-q-tem-pra-hoje/internal/service/recipe"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestRecipeController_Add(t *testing.T) {

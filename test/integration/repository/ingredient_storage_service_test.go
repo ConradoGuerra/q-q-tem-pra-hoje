@@ -1,14 +1,13 @@
 package respository_integration_test
 
 import (
+	"github.com/stretchr/testify/assert"
 	"q-q-tem-pra-hoje/internal/domain/ingredient"
 	"q-q-tem-pra-hoje/internal/repository/postgres"
 	ingredientService "q-q-tem-pra-hoje/internal/service/ingredient"
 	"q-q-tem-pra-hoje/internal/testutil"
 	"testing"
-	"github.com/stretchr/testify/assert"
 )
-
 
 func TestIngredientService_Add(t *testing.T) {
 	db := testutil.GetDB()

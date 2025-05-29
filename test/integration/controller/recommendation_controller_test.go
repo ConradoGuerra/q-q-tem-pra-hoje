@@ -2,6 +2,7 @@ package controller_integration_test
 
 import (
 	"encoding/json"
+	"github.com/stretchr/testify/assert"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -13,8 +14,6 @@ import (
 	ingredientService "q-q-tem-pra-hoje/internal/service/ingredient"
 	recommendationService "q-q-tem-pra-hoje/internal/service/recommendation"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestRecommendationController_GetRecommendation(t *testing.T) {

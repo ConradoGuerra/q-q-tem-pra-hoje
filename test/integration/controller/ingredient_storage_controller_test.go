@@ -3,6 +3,7 @@ package controller_integration_test
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/stretchr/testify/assert"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -12,8 +13,6 @@ import (
 	service "q-q-tem-pra-hoje/internal/service/ingredient"
 	"strings"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestIngredientStorageController_Add(t *testing.T) {
@@ -87,48 +86,48 @@ func TestIngredientStorageController_GetAll(t *testing.T) {
 }
 
 func TestIngredientController_Update_Integration(t *testing.T) {
-    repo := in_memory_repository.NewIngredientStorageManager()
-    svc := service.NewService(&repo)
-    ctrl := controller.NewIngredientController(svc)
+	repo := in_memory_repository.NewIngredientStorageManager()
+	svc := service.NewService(&repo)
+	ctrl := controller.NewIngredientController(svc)
 
-    mux := http.NewServeMux()
-    mux.HandleFunc("PATCH /ingredient/{id}", func(w http.ResponseWriter, r *http.Request) {
-        ctrl.Update(w, r)
-    })
+	mux := http.NewServeMux()
+	mux.HandleFunc("PATCH /ingredient/{id}", func(w http.ResponseWriter, r *http.Request) {
+		ctrl.Update(w, r)
+	})
 
-    server := httptest.NewServer(mux)
-    defer server.Close()
+	server := httptest.NewServer(mux)
+	defer server.Close()
 
-    initialIng := ingredient.Ingredient{
-        Name:        "Salt",
-        MeasureType: "unit",
-        Quantity:    1,
-    }
-    repo.AddIngredient(initialIng)
+	initialIng := ingredient.Ingredient{
+		Name:        "Salt",
+		MeasureType: "unit",
+		Quantity:    1,
+	}
+	repo.AddIngredient(initialIng)
 
-    requestBody := `{"name":"Salt","measureType":"unit","quantity":5}`
-    req, err := http.NewRequest(http.MethodPatch, server.URL+"/ingredient/1", strings.NewReader(requestBody))
-    if err != nil {
-        t.Fatalf("failed to create request: %v", err)
-    }
-    req.Header.Set("Content-Type", "application/json")
+	requestBody := `{"name":"Salt","measureType":"unit","quantity":5}`
+	req, err := http.NewRequest(http.MethodPatch, server.URL+"/ingredient/1", strings.NewReader(requestBody))
+	if err != nil {
+		t.Fatalf("failed to create request: %v", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
 
-    client := &http.Client{}
-    resp, err := client.Do(req)
-    if err != nil {
-        t.Fatalf("failed to send request: %v", err)
-    }
-    defer resp.Body.Close()
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		t.Fatalf("failed to send request: %v", err)
+	}
+	defer resp.Body.Close()
 
-    assert.Equal(t, http.StatusOK, resp.StatusCode)
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
 
-    ingredients := repo.Ingredients
-    assert.NotEmpty(t, ingredients)
-    assert.Len(t, ingredients, 1)
-    updated := ingredients[0]
-    assert.Equal(t, "Salt", updated.Name)
-    assert.Equal(t, "unit", updated.MeasureType)
-    assert.Equal(t, 5, updated.Quantity)
+	ingredients := repo.Ingredients
+	assert.NotEmpty(t, ingredients)
+	assert.Len(t, ingredients, 1)
+	updated := ingredients[0]
+	assert.Equal(t, "Salt", updated.Name)
+	assert.Equal(t, "unit", updated.MeasureType)
+	assert.Equal(t, 5, updated.Quantity)
 }
 
 func TestIngredientStorageController_Delete(t *testing.T) {
