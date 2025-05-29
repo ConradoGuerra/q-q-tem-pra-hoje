@@ -15,7 +15,7 @@ func TestMain(m *testing.M) {
 
 	db := testutil.Connect(dsn)
 	testutil.SetDB(db)
-	runMigrations(testutil.DB)
+	testutil.RunMigrations(db)
 	code := m.Run()
 
 	defer teardown()

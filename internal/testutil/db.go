@@ -10,7 +10,7 @@ import (
 	"log"
 )
 
-var DB *sql.DB
+var db *sql.DB
 
 func SetupTestDB() (string, func()) {
 	ctx := context.Background()
@@ -52,13 +52,46 @@ func Connect(connStr string) *sql.DB {
 	return db
 
 }
-func SetDB(db *sql.DB) {
-    DB = db
+func SetDB(newDB *sql.DB) {
+	db = newDB
 }
 
 func GetDB() *sql.DB {
-	if DB == nil {
+	if db == nil {
 		panic("DB not initialized")
 	}
-	return DB
+	return db
+}
+
+func RunMigrations(db *sql.DB) {
+	_, err := db.Exec("CREATE TABLE IF NOT EXISTS recipes (id SERIAL PRIMARY KEY, name TEXT NOT NULL UNIQUE);")
+	if err != nil {
+		log.Fatalf("failed to create table recipes: %v", err)
+	}
+
+	_, err = db.Exec(`
+    CREATE TABLE IF NOT EXISTS recipes_ingredients (
+        recipe_id INT NOT NULL REFERENCES recipes(id) ON DELETE CASCADE,
+        name TEXT NOT NULL,
+        measure_type TEXT NOT NULL,
+        quantity INT NOT NULL,
+        PRIMARY KEY (recipe_id,name));
+    `)
+
+	if err != nil {
+		log.Fatalf("failed to create table recipes_ingredients: %v", err)
+	}
+
+	_, err = db.Exec(`
+        CREATE TABLE IF NOT EXISTS ingredients_storage (
+            id SERIAL PRIMARY KEY,
+            name TEXT NOT NULL,
+            measure_type TEXT NOT NULL,
+            quantity INT NOT NULL
+        );
+    `)
+
+	if err != nil {
+		log.Fatalf("failed to create the ingredients_storage table: %v", err)
+	}
 }

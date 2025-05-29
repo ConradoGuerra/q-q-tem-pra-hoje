@@ -26,7 +26,7 @@ func TestRecommendationController_GetRecommendation(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	handler := app.NewHandler(testutil.DB)
+	handler := app.NewHandler(db)
 
 	ts := httptest.NewServer(handler)
 	query := `INSERT INTO ingredients_storage(name, measure_type, quantity)
