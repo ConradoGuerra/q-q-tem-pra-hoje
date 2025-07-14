@@ -1,4 +1,4 @@
-# q-q-tem-pra-hoje
+# O que é que tem para hoje?
 
 "q-q-tem-pra-hoje" (a rough translation of "what's for today?" in Portuguese) is a recipe management and recommendation system. It allows users to manage their ingredients, add recipes, and get recommendations for what to cook based on the ingredients they have.
 
