@@ -4,10 +4,15 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/lib/pq"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 	"log"
+	"os"
+	"path/filepath"
 )
 
 var db *sql.DB
@@ -64,34 +69,35 @@ func GetDB() *sql.DB {
 }
 
 func RunMigrations(db *sql.DB) {
-	_, err := db.Exec("CREATE TABLE IF NOT EXISTS recipes (id SERIAL PRIMARY KEY, name TEXT NOT NULL UNIQUE);")
+	driver, err := postgres.WithInstance(db, &postgres.Config{})
 	if err != nil {
-		log.Fatalf("failed to create table recipes: %v", err)
+		log.Fatalf("failed to create migrate driver: %v", err)
 	}
 
-	_, err = db.Exec(`
-    CREATE TABLE IF NOT EXISTS recipes_ingredients (
-        recipe_id INT NOT NULL REFERENCES recipes(id) ON DELETE CASCADE,
-        name TEXT NOT NULL,
-        measure_type TEXT NOT NULL,
-        quantity INT NOT NULL,
-        PRIMARY KEY (recipe_id,name));
-    `)
-
+	wd, err := os.Getwd()
 	if err != nil {
-		log.Fatalf("failed to create table recipes_ingredients: %v", err)
+		log.Fatalf("failed to get working directory: %v", err)
 	}
 
-	_, err = db.Exec(`
-        CREATE TABLE IF NOT EXISTS ingredients_storage (
-            id SERIAL PRIMARY KEY,
-            name TEXT NOT NULL,
-            measure_type TEXT NOT NULL,
-            quantity INT NOT NULL
-        );
-    `)
+	projectRoot := wd
+	for {
+		if _, err := os.Stat(filepath.Join(projectRoot, "go.mod")); err == nil {
+			break
+		}
+		parent := filepath.Dir(projectRoot)
+		if parent == projectRoot {
+			log.Fatalf("could not find project root (go.mod)")
+		}
+		projectRoot = parent
+	}
 
+	migrationsPath := filepath.Join(projectRoot, "migrations")
+	m, err := migrate.NewWithDatabaseInstance("file://"+migrationsPath, "postgres", driver)
 	if err != nil {
-		log.Fatalf("failed to create the ingredients_storage table: %v", err)
+		log.Fatalf("failed to create migrator: %v", err)
+	}
+
+	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
+		log.Fatalf("failed to run migrations: %v", err)
 	}
 }

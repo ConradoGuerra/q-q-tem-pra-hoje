@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"q-q-tem-pra-hoje/internal/config"
 
+	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/lib/pq"
 )
 
@@ -16,55 +19,25 @@ func SetupDB() string {
 
 }
 
-func Connect(connStr string ) (*sql.DB, error) {
+func Connect(connStr string) (*sql.DB, error) {
 	db, err := sql.Open("postgres", connStr)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to the database: %v\n", err)
 	}
 
-	_, err = db.Exec(`
-        CREATE TABLE IF NOT EXISTS ingredients_storage (
-            id SERIAL PRIMARY KEY,
-            name TEXT NOT NULL,
-            measure_type TEXT NOT NULL,
-            quantity INT NOT NULL
-        );
-    `)
-
+	driver, err := postgres.WithInstance(db, &postgres.Config{})
 	if err != nil {
-		return nil, fmt.Errorf("failed to create the ingredients_storage table: %v\n", err)
+		return nil, fmt.Errorf("failed to create migrate driver: %v", err)
 	}
 
-	_, err = db.Exec("CREATE TABLE IF NOT EXISTS recipes (id SERIAL PRIMARY KEY, name TEXT NOT NULL UNIQUE);")
+	m, err := migrate.NewWithDatabaseInstance("file://migrations", "postgres", driver)
 	if err != nil {
-		fmt.Errorf("failed to create table recipes: %v", err)
+		return nil, fmt.Errorf("failed to create migrator: %v", err)
 	}
 
-	_, err = db.Exec(`
-    CREATE TABLE IF NOT EXISTS recipes_ingredients (
-        recipe_id INT NOT NULL REFERENCES recipes(id) ON DELETE CASCADE,
-        name TEXT NOT NULL,
-        measure_type TEXT NOT NULL,
-        quantity INT NOT NULL,
-        PRIMARY KEY (recipe_id,name));
-    `)
-
-	if err != nil {
-		fmt.Errorf("failed to create table recipes_ingredients: %v", err)
-	}
-
-	_, err = db.Exec(`
-        CREATE TABLE IF NOT EXISTS ingredients_storage (
-            id SERIAL PRIMARY KEY,
-            name TEXT NOT NULL,
-            measure_type TEXT NOT NULL,
-            quantity INT NOT NULL
-        );
-    `)
-
-	if err != nil {
-		fmt.Errorf("failed to create the ingredients_storage table: %v", err)
+	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
+		return nil, fmt.Errorf("failed to run migrations: %v", err)
 	}
 	return db, nil
 }

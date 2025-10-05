@@ -41,6 +41,26 @@
 
 The application will be running at `http://localhost:8080`.
 
+## Database Migrations
+
+This project uses [golang-migrate](https://github.com/golang-migrate/migrate) for database schema management.
+
+### Running Migrations
+
+- **Apply migrations:** `migrate -path migrations -database "postgres://user:secret@localhost:6432/q-q-tem-pra-hj-db?sslmode=disable" up`
+- **Rollback last migration:** `migrate -path migrations -database "postgres://user:secret@localhost:6432/q-q-tem-pra-hj-db?sslmode=disable" down 1`
+- **Check migration status:** `migrate -path migrations -database "postgres://user:secret@localhost:6432/q-q-tem-pra-hj-db?sslmode=disable" version`
+
+Replace the database URL with your actual connection string.
+
+### Creating New Migrations
+
+To create a new migration:
+
+1. `migrate create -ext sql -dir migrations -seq add_new_table`
+2. Edit the generated `up` and `down` SQL files.
+3. Run `migrate up` to apply.
+
 ## API Endpoints
 
 ### Ingredients
