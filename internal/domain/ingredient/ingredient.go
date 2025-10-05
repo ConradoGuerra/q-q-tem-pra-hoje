@@ -7,7 +7,7 @@ type Ingredient struct {
 	Quantity    int
 }
 
-func NewIngredient(id int, name string, measureType string, quantity int) Ingredient {
-  ingredient := Ingredient{Id: &id, Name: name, MeasureType: measureType, Quantity: quantity}
+func NewIngredient(id *int, name string, measureType string, quantity int) Ingredient {
+  ingredient := Ingredient{Id: id, Name: name, MeasureType: measureType, Quantity: quantity}
 	return ingredient
 }

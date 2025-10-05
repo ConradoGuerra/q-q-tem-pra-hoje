@@ -66,7 +66,7 @@ func (ic *IngredientController) Add(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ing := ingredient.NewIngredient(0, input.Name, input.MeasureType, input.Quantity)
+	ing := ingredient.NewIngredient(nil, input.Name, input.MeasureType, input.Quantity)
 
 	if err := ic.service.Add(ing); err != nil {
 		ic.respondWithError(w, http.StatusInternalServerError, ErrInternalServerError)
@@ -105,7 +105,7 @@ func (ic *IngredientController) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	updatedIngredient := ingredient.NewIngredient(intId, input.Name, input.MeasureType, input.Quantity)
+	updatedIngredient := ingredient.NewIngredient(&intId, input.Name, input.MeasureType, input.Quantity)
 
 	if err := ic.service.Update(updatedIngredient); err != nil {
 		ic.respondWithError(w, http.StatusInternalServerError, errors.New("failed to update ingredient"))

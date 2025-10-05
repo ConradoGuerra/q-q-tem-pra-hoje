@@ -16,8 +16,8 @@ func NewRecipeManager(db *sql.DB) *recipeManager {
 }
 
 func (rm recipeManager) AddRecipe(recipe recipe.Recipe) error {
-	var recipeId  int
-	err := rm.QueryRow("INSERT INTO recipes (name) VALUES ($1) RETURNING id;", recipe.Name).Scan(&recipeId )
+	var recipeId int
+	err := rm.QueryRow("INSERT INTO recipes (name) VALUES ($1) RETURNING id;", recipe.Name).Scan(&recipeId)
 	if err != nil {
 		return fmt.Errorf("failed to insert recipe: %v", err)
 	}
@@ -27,7 +27,7 @@ func (rm recipeManager) AddRecipe(recipe recipe.Recipe) error {
 		      INSERT INTO recipes_ingredients (recipe_id, name, measure_type, quantity)
 		      VALUES ($1, $2, $3, $4)
 		      ON CONFLICT (recipe_id, name) DO NOTHING;
-		  `, recipeId , ing.Name, ing.MeasureType, ing.Quantity)
+		  `, recipeId, ing.Name, ing.MeasureType, ing.Quantity)
 		if err != nil {
 			return fmt.Errorf("failed to insert a recipe ingredient: %v", err)
 		}
@@ -42,7 +42,7 @@ func (rm recipeManager) GetAllRecipes() ([]recipe.Recipe, error) {
                           i.measure_type, 
                           i.quantity 
                         FROM recipes r 
-                          JOIN recipes_ingredients i ON r.id = i.recipe_id`)
+                          LEFT JOIN recipes_ingredients i ON r.id = i.recipe_id`)
 
 	if err != nil {
 		return nil, fmt.Errorf("error querying recipes: %w", err)
@@ -55,26 +55,37 @@ func (rm recipeManager) GetAllRecipes() ([]recipe.Recipe, error) {
 	for rows.Next() {
 		var recipeId int
 		var recipeName string
-		var ingredientRetrieved ingredient.Ingredient
+		var ingredientName sql.NullString
+		var measureType sql.NullString
+		var quantity sql.NullInt64
 
-		err := rows.Scan(&recipeId, &recipeName, &ingredientRetrieved.Name, &ingredientRetrieved.MeasureType, &ingredientRetrieved.Quantity)
+		err := rows.Scan(&recipeId, &recipeName, &ingredientName, &measureType, &quantity)
 		if err != nil {
+			fmt.Printf("failed to scan row: %v", err)
 			return nil, fmt.Errorf("failed to scan row: %v", err)
 		}
 
+		ingredientFound := ingredient.NewIngredient(nil, ingredientName.String, measureType.String, int(quantity.Int64))
+
 		if r, exists := recipeMap[recipeName]; exists {
-			r.Ingredients = append(r.Ingredients, ingredientRetrieved)
+			r.Ingredients = append(r.Ingredients, ingredientFound)
 		} else {
 			newRecipe := &recipe.Recipe{
-				Id:          &recipeId,
-				Name:        recipeName,
-				Ingredients: []ingredient.Ingredient{ingredientRetrieved},
+				Id:   &recipeId,
+				Name: recipeName,
+			}
+			if ingredientName.Valid {
+				newRecipe.Ingredients = []ingredient.Ingredient{ingredientFound}
+
+			} else {
+				newRecipe.Ingredients = []ingredient.Ingredient{}
 			}
 			recipeMap[recipeName] = newRecipe
 		}
 	}
 
 	if err := rows.Err(); err != nil {
+		fmt.Printf("error iterating rows: %v", err)
 		return nil, fmt.Errorf("error iterating rows: %v", err)
 	}
 

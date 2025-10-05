@@ -48,7 +48,6 @@ func (rc RecipeController) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{
 		"message": "Invalid HTTP Method",
 	})
-	return
 }
 
 func (rc RecipeController) Add(w http.ResponseWriter, r *http.Request) {
@@ -100,10 +99,9 @@ func (rc RecipeController) GetRecipes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Add("Content-Type", "application/json")
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(&recipes)
-	return
 }
 
 func (rc RecipeController) Delete(w http.ResponseWriter, r *http.Request) {
