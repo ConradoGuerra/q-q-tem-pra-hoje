@@ -173,7 +173,7 @@ async function getRecipes() {
     .map(
       (recipe) => `<div class="recipe-card">
                     <h3>${recipe.Name}</h3>
-                    <div>Requires:</div>
+                    ${recipe.Ingredients.length ? "<div>Requires:</div>" : ""}
                     ${recipe.Ingredients.map(
                       (ing) =>
                         `<div class="ingredient-badge">${ing.Name}: ${ing.Quantity} ${ing.MeasureType}</div>`,
