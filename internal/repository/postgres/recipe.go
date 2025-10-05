@@ -78,7 +78,7 @@ func (rm recipeManager) GetAllRecipes() ([]recipe.Recipe, error) {
 		return nil, fmt.Errorf("error iterating rows: %v", err)
 	}
 
-	var recipesRetrieved []recipe.Recipe
+	recipesRetrieved := []recipe.Recipe{}
 	for _, r := range recipeMap {
 		recipesRetrieved = append(recipesRetrieved, *r)
 	}

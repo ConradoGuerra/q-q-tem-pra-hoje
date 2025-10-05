@@ -52,7 +52,7 @@ func (ism *ingredientStorageManager) FindIngredients() ([]ingredient.Ingredient,
 	}
 	defer rows.Close()
 
-	var ingredients []ingredient.Ingredient
+	ingredients := []ingredient.Ingredient{}
 
 	for rows.Next() {
 		var ingredient ingredient.Ingredient
