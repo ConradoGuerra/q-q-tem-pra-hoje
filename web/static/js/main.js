@@ -6,7 +6,6 @@ function hideLoading() {
   document.getElementById("loadingOverlay").style.visibility = "hidden";
 }
 
-// Modal functions
 function openModal() {
   document.getElementById("editModal").style.display = "flex";
 }
@@ -15,7 +14,6 @@ function closeModal() {
   document.getElementById("editModal").style.display = "none";
 }
 
-// Ingredients
 async function addIngredient() {
   showLoading();
   const ingredient = {
@@ -30,7 +28,6 @@ async function addIngredient() {
     body: JSON.stringify(ingredient),
   });
 
-  // Clear form
   document.getElementById("ingredientName").value = "";
   document.getElementById("quantity").value = "";
   document.getElementById("measureType").value = "";
@@ -106,6 +103,12 @@ async function deleteIngredient(id) {
 }
 
 let recipeIngredients = [];
+let allRecipes = [];
+let currentRecipePage = 1;
+const recipesPerPage = 10;
+let allRecommendations = [];
+let currentRecPage = 1;
+const recsPerPage = 10;
 
 function addRecipeIngredient() {
   const newInput = document.createElement("div");
@@ -157,32 +160,53 @@ async function createRecipe() {
               </select>
             </div>
           </div>
-        `;
+         `;
 
+  currentRecipePage = 1; // Reset to first page
   await getRecipes();
   hideLoading();
 }
 
 async function getRecipes() {
   const response = await fetch("http://localhost:8080/recipe");
-  const recipes = await response.json();
+  allRecipes = await response.json();
+  displayRecipes(currentRecipePage);
+}
 
+function displayRecipes(page) {
   const container = document.getElementById("recipes");
+  const start = (page - 1) * recipesPerPage;
+  const end = start + recipesPerPage;
+  const pageRecipes = allRecipes.slice(start, end);
 
-  container.innerHTML = recipes
+  container.innerHTML = pageRecipes
     .map(
       (recipe) => `<div class="recipe-card">
                     <h3>${recipe.Name}</h3>
-                    ${recipe.Ingredients.length ? "<div>Requires:</div>" : ""}
+                    ${recipe.Ingredients.length ? "<div>Requires:</div><div class=\"badges-container\">" : ""}
                     ${recipe.Ingredients.map(
                       (ing) =>
                         `<div class="ingredient-badge">${ing.Name}: ${ing.Quantity} ${ing.MeasureType}</div>`,
                     ).join("")}
+                    ${recipe.Ingredients.length ? "</div>" : ""}
                     <button class="btn-danger" onclick="deleteRecipe('${recipe.Id}')">Delete</button>
                 </div>
             `,
     )
     .join("");
+
+  // Pagination
+  const totalPages = Math.ceil(allRecipes.length / recipesPerPage);
+  let pagination = '<div class="pagination">';
+  if (page > 1) pagination += `<button onclick="changeRecipePage(${page - 1})">Prev</button>`;
+  if (page < totalPages) pagination += `<button onclick="changeRecipePage(${page + 1})">Next</button>`;
+  pagination += `</div>`;
+  container.innerHTML += pagination;
+}
+
+function changeRecipePage(page) {
+  currentRecipePage = page;
+  displayRecipes(page);
 }
 
 async function deleteRecipe(id) {
@@ -195,6 +219,7 @@ async function deleteRecipe(id) {
     method: "DELETE",
   });
 
+  currentRecipePage = 1; // Reset to first page
   await getRecipes();
   hideLoading();
 }
@@ -202,26 +227,59 @@ async function deleteRecipe(id) {
 async function getRecommendations() {
   showLoading();
   const response = await fetch("http://localhost:8080/recommendation");
-  const recipes = await response.json();
+  allRecommendations = await response.json();
+  currentRecPage = 1; // Reset to first page
+  displayRecommendations(currentRecPage);
+  hideLoading();
+}
 
+function displayRecommendations(page) {
   const container = document.getElementById("recommendations");
+  const start = (page - 1) * recsPerPage;
+  const end = start + recsPerPage;
+  const pageRecs = allRecommendations.slice(start, end);
 
-  container.innerHTML = recipes
+  container.innerHTML = pageRecs
     .map(
       (recipe) => `<div class="recipe-card">
                     <h3>${recipe.Recipe.Name}</h3>
                     <div>Requires:</div>
+                    <div class="badges-container">
                     ${recipe.Recipe.Ingredients.map(
                       (ing) =>
                         `<div class="ingredient-badge">${ing.Name}: ${ing.Quantity} ${ing.MeasureType}</div>`,
                     ).join("")}
+                    </div>
                 </div>
             `,
     )
     .join("");
 
-  hideLoading();
+  // Pagination
+  const totalPages = Math.ceil(allRecommendations.length / recsPerPage);
+  let pagination = '<div class="pagination">';
+  if (page > 1) pagination += `<button onclick="changeRecPage(${page - 1})">Prev</button>`;
+  if (page < totalPages) pagination += `<button onclick="changeRecPage(${page + 1})">Next</button>`;
+  pagination += `</div>`;
+  container.innerHTML += pagination;
 }
+
+function changeRecPage(page) {
+  currentRecPage = page;
+  displayRecommendations(page);
+}
+
+// Tab switching
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById(tab.dataset.tab + '-tab').classList.add('active');
+  });
+});
+
+
 
 getIngredients();
 getRecipes();

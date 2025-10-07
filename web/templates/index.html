@@ -10,76 +10,88 @@
     />
     <link rel="stylesheet" href="../static/css/main.css" />
   </head>
-  <body>
-    <h1>O que é que tem pra hoje?</h1>
+   <body>
+     <h1>O que é que tem pra hoje?</h1>
 
-    <div class="container">
-      <!-- Ingredient Section -->
-      <div class="card">
-        <h2>Add Ingredient</h2>
-        <div class="input-group">
-          <label>Name</label>
-          <input type="text" id="ingredientName" placeholder="E.g., Tomato" />
-        </div>
-        <div class="input-group">
-          <label>Quantity</label>
-          <input type="number" id="quantity" placeholder="E.g., 500" />
-        </div>
-        <div class="input-group">
-          <label>Measure Type</label>
-          <select id="measureType">
-            <option value="unit">Unit</option>
-            <option value="g">Gram</option>
-            <option value="mg">Milligram</option>
-          </select>
-        </div>
-        <button id="addIngredientBtn">Add Ingredient</button>
+     <nav class="tabs">
+       <button class="tab active" data-tab="ingredients">Ingredients</button>
+       <button class="tab" data-tab="recipes">Recipes</button>
+       <button class="tab" data-tab="recommendations">Recommendations</button>
+     </nav>
 
-        <div class="ingredient-list" id="ingredientList"></div>
-      </div>
+     <div class="container">
+       <!-- Ingredient Section -->
+       <div id="ingredients-tab" class="tab-content active">
+         <div class="card">
+           <h2>Add Ingredient</h2>
+           <div class="input-group">
+             <label>Name</label>
+             <input type="text" id="ingredientName" placeholder="E.g., Tomato" />
+           </div>
+           <div class="input-group">
+             <label>Quantity</label>
+             <input type="number" id="quantity" placeholder="E.g., 500" />
+           </div>
+           <div class="input-group">
+             <label>Measure Type</label>
+             <select id="measureType">
+               <option value="unit">Unit</option>
+               <option value="g">Gram</option>
+               <option value="mg">Milligram</option>
+             </select>
+           </div>
+           <button id="addIngredientBtn">Add Ingredient</button>
 
-      <!-- Recipe Section -->
-      <div class="card">
-        <h2>Create Recipe</h2>
-        <div class="input-group">
-          <label>Recipe Name</label>
-          <input
-            type="text"
-            id="recipeName"
-            placeholder="E.g., Spaghetti Carbonara"
-          />
-        </div>
+           <div class="ingredient-list" id="ingredientList"></div>
+         </div>
+       </div>
 
-        <div id="recipeIngredients">
-          <div class="input-group">
-            <label>Ingredient</label>
-            <div class="ingredient-input">
-              <input
-                type="text"
-                class="ingName"
-                placeholder="Ingredient name"
-              />
-              <input type="number" class="ingQuantity" placeholder="Quantity" />
-              <select class="ingMeasure">
-                <option value="unit">Unit</option>
-                <option value="g">Gram</option>
-                <option value="mg">Milligram</option>
-              </select>
-            </div>
-          </div>
-        </div>
-        <button id="addRecipeIngredientBtn">+ Add Ingredient</button>
-        <button id="createRecipeBtn">Create Recipe</button>
-        <div id="recipes" class="recipe-recommendations"></div>
-      </div>
+       <!-- Recipe Section -->
+       <div id="recipes-tab" class="tab-content">
+         <div class="card">
+           <h2>Create Recipe</h2>
+           <div class="input-group">
+             <label>Recipe Name</label>
+             <input
+               type="text"
+               id="recipeName"
+               placeholder="E.g., Spaghetti Carbonara"
+             />
+           </div>
 
-      <!-- Recommendations Section -->
-      <div class="card">
-        <h2>Recommendations</h2>
-        <button id="getRecommendationsBtn">Get Recommendations</button>
-        <div id="recommendations" class="recipe-recommendations"></div>
-      </div>
-    </div>
+           <div id="recipeIngredients">
+             <div class="input-group">
+               <label>Ingredient</label>
+               <div class="ingredient-input">
+                 <input
+                   type="text"
+                   class="ingName"
+                   placeholder="Ingredient name"
+                 />
+                 <input type="number" class="ingQuantity" placeholder="Quantity" />
+                 <select class="ingMeasure">
+                   <option value="unit">Unit</option>
+                   <option value="g">Gram</option>
+                   <option value="mg">Milligram</option>
+                 </select>
+               </div>
+             </div>
+           </div>
+           <button id="addRecipeIngredientBtn">+ Add Ingredient</button>
+           <button id="createRecipeBtn">Create Recipe</button>
+           <div id="recipes" class="recipe-recommendations"></div>
+         </div>
+       </div>
+
+       <!-- Recommendations Section -->
+       <div id="recommendations-tab" class="tab-content">
+         <div class="card">
+           <h2>Recommendations</h2>
+           <button id="getRecommendationsBtn">Get Recommendations</button>
+           <div id="recommendations" class="recipe-recommendations"></div>
+         </div>
+       </div>
+     </div>
 
     <!-- Edit Ingredient Modal -->
     <div class="modal" id="editModal">
