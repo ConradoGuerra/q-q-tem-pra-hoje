@@ -279,7 +279,13 @@ document.querySelectorAll('.tab').forEach(tab => {
   });
 });
 
-
+// Event listeners
+document.getElementById('addIngredientBtn').addEventListener('click', addIngredient);
+document.getElementById('createRecipeBtn').addEventListener('click', createRecipe);
+document.getElementById('getRecommendationsBtn').addEventListener('click', getRecommendations);
+document.getElementById('addRecipeIngredientBtn').addEventListener('click', addRecipeIngredient);
+document.getElementById('updateIngredientBtn').addEventListener('click', updateIngredient);
+document.getElementById('closeModalBtn').addEventListener('click', closeModal);
 
 getIngredients();
 getRecipes();
