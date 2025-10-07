@@ -307,7 +307,7 @@ button:hover {
 }
 
 .modal-content {
-  background: var(--card-bg);
+  background: white;
   padding: 2rem;
   border-radius: 16px;
   width: 90%;

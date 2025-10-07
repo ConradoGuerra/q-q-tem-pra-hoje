@@ -183,7 +183,7 @@ function displayRecipes(page) {
     .map(
       (recipe) => `<div class="recipe-card">
                     <h3>${recipe.Name}</h3>
-                    ${recipe.Ingredients.length ? "<div>Requires:</div><div class=\"badges-container\">" : ""}
+                    ${recipe.Ingredients.length ? '<div>Requires:</div><div class="badges-container">' : ""}
                     ${recipe.Ingredients.map(
                       (ing) =>
                         `<div class="ingredient-badge">${ing.Name}: ${ing.Quantity} ${ing.MeasureType}</div>`,
@@ -198,8 +198,10 @@ function displayRecipes(page) {
   // Pagination
   const totalPages = Math.ceil(allRecipes.length / recipesPerPage);
   let pagination = '<div class="pagination">';
-  if (page > 1) pagination += `<button onclick="changeRecipePage(${page - 1})">Prev</button>`;
-  if (page < totalPages) pagination += `<button onclick="changeRecipePage(${page + 1})">Next</button>`;
+  if (page > 1)
+    pagination += `<button onclick="changeRecipePage(${page - 1})">Prev</button>`;
+  if (page < totalPages)
+    pagination += `<button onclick="changeRecipePage(${page + 1})">Next</button>`;
   pagination += `</div>`;
   container.innerHTML += pagination;
 }
@@ -243,11 +245,13 @@ function displayRecommendations(page) {
     .map(
       (recipe) => `<div class="recipe-card">
                     <h3>${recipe.Recipe.Name}</h3>
-                    <div>Requires:</div>
                     <div class="badges-container">
                     ${recipe.Recipe.Ingredients.map(
                       (ing) =>
-                        `<div class="ingredient-badge">${ing.Name}: ${ing.Quantity} ${ing.MeasureType}</div>`,
+                        `
+                          <div>Requires:</div>
+                          <div class="ingredient-badge">${ing.Name}: ${ing.Quantity} ${ing.MeasureType}</div>
+                        `,
                     ).join("")}
                     </div>
                 </div>
@@ -258,8 +262,10 @@ function displayRecommendations(page) {
   // Pagination
   const totalPages = Math.ceil(allRecommendations.length / recsPerPage);
   let pagination = '<div class="pagination">';
-  if (page > 1) pagination += `<button onclick="changeRecPage(${page - 1})">Prev</button>`;
-  if (page < totalPages) pagination += `<button onclick="changeRecPage(${page + 1})">Next</button>`;
+  if (page > 1)
+    pagination += `<button onclick="changeRecPage(${page - 1})">Prev</button>`;
+  if (page < totalPages)
+    pagination += `<button onclick="changeRecPage(${page + 1})">Next</button>`;
   pagination += `</div>`;
   container.innerHTML += pagination;
 }
@@ -270,22 +276,36 @@ function changeRecPage(page) {
 }
 
 // Tab switching
-document.querySelectorAll('.tab').forEach(tab => {
-  tab.addEventListener('click', () => {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-    tab.classList.add('active');
-    document.getElementById(tab.dataset.tab + '-tab').classList.add('active');
+document.querySelectorAll(".tab").forEach((tab) => {
+  tab.addEventListener("click", () => {
+    document
+      .querySelectorAll(".tab")
+      .forEach((t) => t.classList.remove("active"));
+    document
+      .querySelectorAll(".tab-content")
+      .forEach((c) => c.classList.remove("active"));
+    tab.classList.add("active");
+    document.getElementById(tab.dataset.tab + "-tab").classList.add("active");
   });
 });
 
 // Event listeners
-document.getElementById('addIngredientBtn').addEventListener('click', addIngredient);
-document.getElementById('createRecipeBtn').addEventListener('click', createRecipe);
-document.getElementById('getRecommendationsBtn').addEventListener('click', getRecommendations);
-document.getElementById('addRecipeIngredientBtn').addEventListener('click', addRecipeIngredient);
-document.getElementById('updateIngredientBtn').addEventListener('click', updateIngredient);
-document.getElementById('closeModalBtn').addEventListener('click', closeModal);
+document
+  .getElementById("addIngredientBtn")
+  .addEventListener("click", addIngredient);
+document
+  .getElementById("createRecipeBtn")
+  .addEventListener("click", createRecipe);
+document
+  .getElementById("getRecommendationsBtn")
+  .addEventListener("click", getRecommendations);
+document
+  .getElementById("addRecipeIngredientBtn")
+  .addEventListener("click", addRecipeIngredient);
+document
+  .getElementById("updateIngredientBtn")
+  .addEventListener("click", updateIngredient);
+document.getElementById("closeModalBtn").addEventListener("click", closeModal);
 
 getIngredients();
 getRecipes();
