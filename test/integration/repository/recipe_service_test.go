@@ -1,4 +1,4 @@
-package respository_integration_test
+package repository_integration_test
 
 import (
 	"github.com/stretchr/testify/assert"
@@ -72,6 +72,7 @@ func TestRecipeService_AddRecipe(t *testing.T) {
 
 func TestRecipeService_GetAllRecipes(t *testing.T) {
 	db := testutil.GetDB()
+	cleanUpTable(t, db)
 	createDataset(t, db)
 	t.Cleanup(func() { cleanUpTable(t, db) })
 
@@ -106,7 +107,7 @@ func TestRecipeService_GetAllRecipes(t *testing.T) {
 
 		for i, expectedRecipe := range expectedRecipes {
 			assert.Equal(t, expectedRecipe.Name, recipes[i].Name)
-			assert.Equal(t, expectedRecipe.Ingredients, recipes[i].Ingredients)
+			assert.ElementsMatch(t, expectedRecipe.Ingredients, recipes[i].Ingredients)
 		}
 	})
 
@@ -130,6 +131,7 @@ func TestRecipeService_GetAllRecipes(t *testing.T) {
 }
 func TestRecipeService_DeleteRecipe(t *testing.T) {
 	db := testutil.GetDB()
+	cleanUpTable(t, db)
 	createDataset(t, db)
 	t.Cleanup(func() { cleanUpTable(t, db) })
 

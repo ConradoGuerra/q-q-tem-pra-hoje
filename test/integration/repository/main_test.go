@@ -1,4 +1,4 @@
-package respository_integration_test
+package repository_integration_test
 
 import (
 	"database/sql"
